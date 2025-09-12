@@ -21,10 +21,12 @@ def create_app():
     csrf.init_app(app)
     
     from auth.routes import auth_bp
+    from administrator.routes import administrator_bp
     from driver.routes import driver_bp
     from sponsor.routes import sponsor_bp
     from common.routes import common_bp
     app.register_blueprint(auth_bp)
+    app.register_blueprint(administrator_bp, url_prefix='/admin')
     app.register_blueprint(driver_bp, url_prefix='/driver')
     app.register_blueprint(sponsor_bp, url_prefix='/sponsor')
     app.register_blueprint(common_bp)
