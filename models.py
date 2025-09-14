@@ -13,10 +13,13 @@ class Role:
         return [Role.DRIVER, Role.SPONSOR, Role.ADMIN]
     
 class AboutInfo(db.Model):
-    __tablename__ = 'ABOUT'
-    EntryID = db.Column(db.Integer, primary_key=True)
-    Team_Num = db.Column(db.Integer)
-    Version_num = db.Column(db.Integer)
+    __tablename__ = 'ABOUT_INFO'
+    entry_id = db.Column(db.Integer, primary_key=True)
+    team_num = db.Column(db.Integer)
+    version_num = db.Column(db.Integer)
+    release_date = db.Column(db.DateTime, default=datetime.utcnow)
+    product_name = db.Column(db.String(255))
+    product_desc = db.Column(db.Text)
     
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
