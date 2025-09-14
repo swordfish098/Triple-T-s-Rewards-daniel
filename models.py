@@ -11,7 +11,13 @@ class Role:
     
     def choices():
         return [Role.DRIVER, Role.SPONSOR, Role.ADMIN]
-
+    
+class AboutInfo(db.Model):
+    __tablename__ = 'ABOUT'
+    EntryID = db.Column(db.Integer, primary_key=True)
+    Team_Num = db.Column(db.Integer)
+    Version_num = db.Column(db.Integer)
+    
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
