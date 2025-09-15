@@ -5,8 +5,8 @@
     <h2>About (placeholder)</h2>
     <p>TODO: Team name, details, functions...</p>
     <ul>
-      <li>Team #: {{ about_info.Team_Num }}</li>
-      <li>Version #: {{ about_info.Version_num }}</li>
+      <li>Team #: {{ about_info.team_num }}</li>
+      <li>Version #: {{ about_info.version_num }}</li>
       <li>Release Date: {{ about_info.release_date.strftime('%Y-%m-%d') if about_info.release_date else 'N/A' }}</li>
       <li>Product Name: {{ about_info.product_name or 'N/A' }}</li>
       <li>Product Description: {{ about_info.product_desc or 'N/A' }}</li>
