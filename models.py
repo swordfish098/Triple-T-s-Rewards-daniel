@@ -22,19 +22,17 @@ class AboutInfo(db.Model):
     product_desc = db.Column(db.Text)
     
 class User(db.Model, UserMixin):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(60), nullable=False)
-    role = db.Column(db.String(10), nullable=False, default=Role.DRIVER)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    __tablename__ = 'USERS'
+    USER_CODE = db.Column(db.Integer, primary_key=True)
+    USERNAME = db.Column(db.String(50), unique=True, nullable=False)
+    PASS = db.Column(db.String(255), nullable=False)  
+    USER_TYPE = db.Column(db.String(20), nullable=False)
 
     def set_password(self, password):
-        self.password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        self.PASS = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
     def check_password(self, password):
-        return bcrypt.checkpw(password.encode('utf-8'), self.password_hash.encode('utf-8'))
-
-    def __repr__(self):
-        return f"User('{self.username}', '{self.email}', '{self.role}')"
+        return bcrypt.checkpw(password.encode('utf-8'), self.PASS.encode('utf-8'))
+    
+    def get_id(self):
+        return str(self.USER_CODE)

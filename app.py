@@ -16,20 +16,22 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
-    login_manager.login_view = 'auth.login'
+    login_manager.login_view = 'driver_bp.login'
     login_manager.login_message_category = 'info'
     csrf.init_app(app)
+
+    # Register blueprints
+    from driver.routes import driver_bp
+    app.register_blueprint(driver_bp, url_prefix='/driver')
     
     from auth.routes import auth_bp
     from administrator.routes import administrator_bp
-    from driver.routes import driver_bp
     from sponsor.routes import sponsor_bp
     from common.routes import common_bp
     from about.routes import about_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(administrator_bp, url_prefix='/administrator')
-    app.register_blueprint(driver_bp, url_prefix='/driver')
     app.register_blueprint(sponsor_bp, url_prefix='/sponsor')
     app.register_blueprint(about_bp, url_prefix='/about')
     app.register_blueprint(common_bp)
