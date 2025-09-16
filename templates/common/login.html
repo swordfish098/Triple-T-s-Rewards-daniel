@@ -18,12 +18,11 @@
     <p><a href="/">Back</a></p>
   </form>
 
-  <div class="messages">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <ul>
           {% for category, message in messages %}
-            <li><strong>{{ category|capitalize }}:</strong> {{ message }}</li>
+            <div class="flash-messages {{ category }}">{{ message }}</div>
           {% endfor %}
         </ul>
       {% endif %}

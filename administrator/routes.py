@@ -40,4 +40,4 @@ def dashboard():
 def logout():
     logout_user()
     flash("You have been logged out.", "info")
-    return redirect(url_for('administrator_bp.login'))
+    return redirect(url_for('auth.login'))
