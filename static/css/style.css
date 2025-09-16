@@ -1,0 +1,54 @@
+body {
+    font-family: system-ui, sans-serif;
+    margin: 2rem;
+}
+
+form {
+    max-width: 300px;
+    padding: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+label {
+    display: block;
+    margin-top: 1rem;
+}
+        
+input {
+    width: 100%;
+    padding: 0.4rem;
+    margin-top: 0.2rem;
+}
+
+button {
+    margin-top: 1rem;
+    padding: 0.5rem;
+    width: 100%;
+    cursor: pointer;
+}
+
+.messages {
+    margin-top: 1rem;
+    color: red;
+}
+        
+.box {
+    border: 1px solid #ccc;
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 400px;
+}
+
+a {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+}
+a:hover { 
+    background: #0056b3; 
+}

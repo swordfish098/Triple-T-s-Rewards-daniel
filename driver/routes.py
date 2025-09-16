@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
+from common.decorators import role_required
+from models import Role 
 from models import User
 
 # Blueprint for driver-related routes
@@ -28,7 +30,7 @@ def login():
 
 # Dashboard
 @driver_bp.route('/dashboard')
-@login_required
+@role_required(Role.DRIVER, Role.SPONSOR, allow_admin=True, redirect_to='auth.login')
 def dashboard():
     # Looks inside templates/driver/dashboard.html
     return render_template('driver/dashboard.html', user=current_user)

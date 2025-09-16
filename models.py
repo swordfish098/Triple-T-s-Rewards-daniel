@@ -6,12 +6,12 @@ import bcrypt
 class Role:
     DRIVER = 'driver'
     SPONSOR = 'sponsor'
-    ADMIN = 'admin'
+    ADMINISTRATOR = 'administrator'
     @staticmethod
     
     def choices():
-        return [Role.DRIVER, Role.SPONSOR, Role.ADMIN]
-    
+        return [Role.DRIVER, Role.SPONSOR, Role.ADMINISTRATOR]
+
 class AboutInfo(db.Model):
     __tablename__ = 'ABOUT_INFO'
     entry_id = db.Column(db.Integer, primary_key=True)
