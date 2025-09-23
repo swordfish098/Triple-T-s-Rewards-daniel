@@ -4,7 +4,9 @@
   <body style="font-family: system-ui; margin:2rem;">
     <h2>Sponsor Dashboard (placeholder)</h2>
     <p>TODO: manage drivers, points, catalog…</p>
-    <!--- Add a logout link for the sponsor -->
+    <p><a href="{{ url_for('sponsor_bp.add_user')}}">Add a New Driver</a></p>
+    
+    <a href="{{ url_for('auth.logout') }}">Logout</a>
     <p><a href="/">Back</a></p>
   </body>
 </html>
