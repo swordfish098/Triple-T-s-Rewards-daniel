@@ -36,3 +36,9 @@ class User(db.Model, UserMixin):
     
     def get_id(self):
         return str(self.USER_CODE)
+    
+class StoreSettings(db.Model):
+    __tablename__ = 'STORE_SETTINGS'
+    id = db.Column(db.Integer, primary_key=True)
+    ebay_category_id = db.Column(db.String(50), nullable=False, default='2984')
+    point_ratio = db.Column(db.Integer, nullable=False, default=10)
