@@ -3,6 +3,8 @@ from flask_login import login_user, logout_user, login_required, current_user
 from common.decorators import role_required
 from models import User, Role, StoreSettings  
 from extensions import db  
+from models import User, Role
+from extensions import db
 
 # Blueprint for sponsor-related routes
 sponsor_bp = Blueprint('sponsor_bp', __name__, template_folder="../templates")
@@ -65,3 +67,36 @@ def update_settings():
 
     flash("Store settings updated successfully!", "success")
     return redirect(url_for('sponsor_bp.dashboard'))
+  
+@sponsor_bp.route('/add_user', methods=['GET', 'POST'])
+def add_user():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        role = 'driver'
+
+        existing_user = User.query.filter_by(USERNAME=username).first()
+        if existing_user:
+            flash("Username already exists.", "danger")
+            return redirect(url_for('sponsor_bp.add_user'))
+        
+        last_user = User.query.order_by(User.USER_CODE.desc()).first()
+        if last_user:
+            new_user_code = last_user.USER_CODE + 1
+        else:
+            new_user_code = 1
+        
+        new_user = User(
+            USER_CODE=new_user_code,
+            USERNAME=username,
+            USER_TYPE=role
+        )
+        new_user.set_password(password)
+
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash(f"User '{username}' created successfully!", "success")
+        return redirect(url_for('sponsor_bp.dashboard'))
+    
+    return render_template('sponsor/add_user.html')
