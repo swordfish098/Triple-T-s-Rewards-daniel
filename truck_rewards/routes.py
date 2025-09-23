@@ -4,6 +4,7 @@ from flask import Blueprint, render_template, jsonify
 import requests
 import os
 import base64
+from models import StoreSettings
 
 # --- Configuration Switch ---
 # Set to False to use the live Production environment
