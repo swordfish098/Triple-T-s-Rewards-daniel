@@ -2,15 +2,17 @@
 <html>
   <head><meta charset="utf-8"><title>About Page</title></head>
   <body style="font-family: system-ui; margin:2rem;">
-    <h2>About (placeholder)</h2>
-    <p>TODO: Team name, details, functions...</p>
-    <ul>
-      <li>Team #: {{ about_info.team_num }}</li>
-      <li>Version #: {{ about_info.version_num }}</li>
-      <li>Release Date: {{ about_info.release_date.strftime('%Y-%m-%d') if about_info.release_date else 'N/A' }}</li>
-      <li>Product Name: {{ about_info.product_name or 'N/A' }}</li>
-      <li>Product Description: {{ about_info.product_desc or 'N/A' }}</li>
-    </ul>
     <p><a href="/">Back</a></p>
+    <h2 style="text-align: center;">About TTT Rewards</h2>
+    <ul>
+      <img src="{{ url_for('static', filename='TTTtiger.png') }}" alt="There should be a truck here" width="1024" height="438"> 
+      <li>Team #: 12</li>
+      <li>Version #: {{ version_num }}</li>
+      <li>Release Date: {{ release_date.strftime('%Y-%m-%d') }}</li>
+      <li>Product Name: Team Twelve Trucking</li>
+      <li>Product Description: Triple T for short, currently the site has a 
+        placeholder home page and placeholder logins for all 3 types of users,
+         and a placeholder points shop that is using a temporary API</li>
+    </ul>
   </body>
 </html>
