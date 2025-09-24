@@ -31,6 +31,16 @@ python app.py
 Open your browser at http://127.0.0.1:5000
 You’ll see the landing page with links to:
 
+## EC2 Hosting
+  1. Connect to Team12-EC2
+  2. cd Triple-T's Rewards – Team 12
+  3. git pull (keep updated)
+  4. python3 -m venv venv #Create virtual environment
+  5. source venv/bin/activate #activate virtual environment
+  6. pip install -r requirements.txt
+  7. pip install gunicorn # Python Web Server Gateway Interface 
+  8. gunicorn --workers 3 --bind 0.0.0.0:8000 app:app #Launch application with gunicorn
+
 Driver Dashboard (placeholder)
 
 Sponsor Dashboard (placeholder)

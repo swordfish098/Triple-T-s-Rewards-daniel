@@ -3,7 +3,19 @@
   <head><meta charset="utf-8"><title>Administrator Dashboard</title></head>
   <body style="font-family: system-ui; margin:2rem;">
     <h2>Administrator Dashboard (placeholder)</h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="flashes">
+          {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
     <p>TODO: manage users, sponsors, drivers, reports…</p>
+    <p><a href="{{ url_for('administrator_bp.add_user') }}">Add a New User</a></p>
+    
+    <a href="{{ url_for('auth.logout') }}">Logout</a>
     <p><a href="/">Back</a></p>
   </body>
 </html>
