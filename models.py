@@ -35,6 +35,7 @@ class User(db.Model, UserMixin):
     LOCKOUT_TIME = db.Column(db.DateTime, nullable=True)
     RESET_TOKEN = db.Column(db.String(255), nullable=True, index=True)
     RESET_TOKEN_CREATED_AT = db.Column(db.DateTime, nullable=True)
+    IS_LOCKED_OUT = db.Column(db.Integer, nullable=False)
 
     def set_password(self, password: str):
         self.PASS = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
@@ -44,6 +45,7 @@ class User(db.Model, UserMixin):
     
     def is_account_locked(self) -> bool:
         if self.LOCKOUT_TIME and datetime.utcnow() < self.LOCKOUT_TIME:
+            self.IS_LOCKED_OUT = 1
             return True
         return False
     
@@ -51,10 +53,12 @@ class User(db.Model, UserMixin):
         self.FAILED_ATTEMPTS += 1
         if self.FAILED_ATTEMPTS >= LOCKOUT_ATTEMPTS:
             self.LOCKOUT_TIME = datetime.utcnow() + timedelta(minutes=15)
+            self.IS_LOCKED_OUT = 1
 
     def clear_failed_attempts(self):
         self.FAILED_ATTEMPTS = 0
         self.LOCKOUT_TIME = None
+        self.IS_LOCKED_OUT = 0
 
     def generate_reset_token(self) -> str:
         token = secrets.token_urlsafe(48)

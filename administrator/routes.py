@@ -71,7 +71,8 @@ def add_user():
         new_user = User(
             USER_CODE=new_user_code, 
             USERNAME=username,  
-            USER_TYPE=role
+            USER_TYPE=role,
+            IS_LOCKED_OUT=0
         )
         new_user.set_password(password)
 
@@ -83,3 +84,30 @@ def add_user():
         return redirect(url_for('administrator_bp.dashboard'))
 
     return render_template('administrator/add_user.html')
+
+@administrator_bp.route('/locked_users', methods=['GET'])
+def locked_users():
+    locked_users = User.query.filter_by(IS_LOCKED_OUT=1).all()
+    return render_template('administrator/locked_users.html', locked_users=locked_users)
+
+
+@administrator_bp.route('/unlock/<int:user_id>', methods=['POST'])
+def unlock(user_id):
+    user = User.query.get_or_404(user_id)
+    user.clear_failed_attempts()
+    user.IS_LOCKED_OUT = 0
+    db.session.commit()
+    flash(f'Account for {user.USERNAME} has been unlocked.', 'success')
+    return redirect(url_for('administrator_bp.locked_users'))
+
+
+
+@administrator_bp.route('/unlock_all', methods=['POST'])
+def unlock_all():
+    locked_users = User.query.filter_by(IS_LOCKED_OUT=1).all()
+    for user in locked_users:
+        user.clear_failed_attempts()
+        user.IS_LOCKED_OUT = 0
+    db.session.commit()
+    flash('All locked accounts have been unlocked.', 'success')
+    return redirect(url_for('administrator_bp.locked_users'))

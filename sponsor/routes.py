@@ -89,7 +89,8 @@ def add_user():
         new_user = User(
             USER_CODE=new_user_code,
             USERNAME=username,
-            USER_TYPE=role
+            USER_TYPE=role,
+            IS_LOCKED_OUT=0
         )
         new_user.set_password(password)
 
