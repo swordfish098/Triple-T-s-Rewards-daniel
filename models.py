@@ -68,6 +68,7 @@ class User(db.Model, UserMixin):
         
     def get_id(self):
         return str(self.USER_CODE)
+
     
 class StoreSettings(db.Model):
     __tablename__ = 'STORE_SETTINGS'

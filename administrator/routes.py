@@ -3,7 +3,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from common.decorators import role_required
 from models import User, Role
 from extensions import db
-import bcrypt
+
 
 # Blueprint for administrator-related routes
 administrator_bp = Blueprint('administrator_bp', __name__, template_folder="../templates")

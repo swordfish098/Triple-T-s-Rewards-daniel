@@ -79,3 +79,10 @@ a {
 a:hover { 
     background: #0056b3; 
 }
+
+.center-image {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+   /* Optional: Adjust the image width */
+}

@@ -16,6 +16,12 @@
       {% endif %}
     {% endwith %}
 
+    <div class="box" style="margin-bottom: 2rem;">
+        <h3>Driver Management</h3>
+        <p>Use the link below to create new accounts for your drivers.</p>
+        <a href="{{ url_for('sponsor_bp.add_user') }}">Add a New Driver</a>
+    </div>
+
     <div class="box">
         <h3>Current Store Settings</h3>
         <p><strong>eBay Category ID:</strong> {{ settings.ebay_category_id }}</p>
@@ -35,6 +41,7 @@
         <button type="submit">Save Changes</button>
     </form>
 
+    <a href="{{ url_for('auth.logout') }}">Logout</a>
     <p><a href="/">Back</a></p>
   </body>
 </html>
