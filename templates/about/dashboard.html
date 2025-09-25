@@ -2,7 +2,14 @@
 <html>
   <head><meta charset="utf-8"><title>About Page</title></head>
   <body style="font-family: system-ui; margin:2rem;">
-    <p><a href="/">Back</a></p>
+    <p><a href="/">Back</a>
+        {% if current_user.is_authenticated %}
+          Logged in as {{ current_user.USERNAME }}
+          (<a href="{{ url_for('auth.logout') }}">Logout</a>)
+        {% else %}
+          <a href="{{ url_for('auth.login') }}">Login</a>
+        {% endif %}
+     </p>
     <h2 style="text-align: center;">About TTT Rewards</h2>
     <ul>
       <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -18,6 +25,7 @@
       <li>Product Description: Triple T for short, currently the site has a 
         placeholder home page and placeholder logins for all 3 types of users,
          and a placeholder points shop that is using a temporary API</li>
+      
     </ul>
   </body>
 </html>
