@@ -1,12 +1,61 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from common.decorators import role_required
-from models import User, Role
+from models import User, Role, AuditLog
 from extensions import db
+from sqlalchemy import or_
+from common.logging import (LOGIN_EVENT,
+    SALES_BY_SPONSOR, SALES_BY_DRIVER, INVOICE_EVENT,
+    DRIVER_POINTS)
 
 
 # Blueprint for administrator-related routes
 administrator_bp = Blueprint('administrator_bp', __name__, template_folder="../templates")
+
+@administrator_bp.route("/audit_logs")
+@role_required(Role.ADMINISTRATOR, allow_admin=False)
+def audit_menu():
+    return render_template("administrator/audit_menu.html")
+@administrator_bp.route("/audit_logs/sales/sponsor")
+@role_required(Role.ADMINISTRATOR, allow_admin=False)
+def audit_sales_by_sponsor():
+    events = AuditLog.query.filter(
+        AuditLog.EVENT_TYPE == SALES_BY_SPONSOR
+    ).order_by(AuditLog.CREATED_AT.desc()).all()
+    return render_template("administrator/audit_list.html",
+                           title="Sales by Sponsor",
+                           events=events)
+
+@administrator_bp.route("/audit_logs/sales/driver")
+@role_required(Role.ADMINISTRATOR, allow_admin=False)
+def audit_sales_by_driver():
+    events = AuditLog.query.filter(
+        AuditLog.EVENT_TYPE == SALES_BY_DRIVER
+    ).order_by(AuditLog.CREATED_AT.desc()).all()
+    return render_template("administrator/audit_list.html",
+                           title="Sales by Driver",
+                           events=events)
+
+@administrator_bp.route("/audit_logs/invoices")
+@role_required(Role.ADMINISTRATOR, allow_admin=False)
+def audit_invoices():
+    events = AuditLog.query.filter(
+        AuditLog.EVENT_TYPE == INVOICE_EVENT
+    ).order_by(AuditLog.CREATED_AT.desc()).all()
+    return render_template("administrator/audit_list.html",
+                           title="Invoices",
+                           events=events)
+
+@administrator_bp.route("/audit_logs/driver-points")
+@role_required(Role.ADMINISTRATOR, allow_admin=False)
+def audit_driver_points():
+    events = AuditLog.query.filter(
+        AuditLog.EVENT_TYPE == DRIVER_POINTS
+    ).order_by(AuditLog.CREATED_AT.desc()).all()
+    return render_template("administrator/audit_list.html",
+                           title="Driver Point Tracking",
+                           events=events)
+
 
 # Login
 @administrator_bp.route('/login', methods=['GET', 'POST'])
@@ -35,6 +84,36 @@ def login():
 def dashboard():
     # Looks inside templates/administrator/dashboard.html
     return render_template('administrator/dashboard.html', user=current_user)
+
+@administrator_bp.get('/audit_logs/view')
+@role_required(Role.ADMINISTRATOR, allow_admin=False)
+def view_audit_logs():
+    event_type = request.args.get("event_type")
+    allowed = {LOGIN_EVENT, SALES_BY_SPONSOR, SALES_BY_DRIVER, INVOICE_EVENT, DRIVER_POINTS}
+    if event_type not in allowed:
+        flash("Unknown audit log type.", "warning")
+        return redirect(url_for("administrator_bp.audit_menu"))
+    
+
+    logs = (AuditLog.query
+            .filter(AuditLog.EVENT_TYPE == event_type)
+            .order_by(AuditLog.CREATED_AT.desc())
+            .limit(200)
+            .all())
+
+    # Nice page title
+    titles = {
+        LOGIN_EVENT: "Login Activity",
+        SALES_BY_SPONSOR: "Sales by Sponsor",
+        SALES_BY_DRIVER: "Sales by Driver",
+        INVOICE_EVENT: "Invoices",
+        DRIVER_POINTS: "Driver Point Tracking",
+    }
+    return render_template(
+        "administrator/audit_list.html",
+        title=titles.get(event_type, "Unknown Event"),
+        events=logs
+    )
 
 # Logout
 @administrator_bp.route('/logout')

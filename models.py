@@ -6,6 +6,14 @@ import secrets
 
 LOCKOUT_ATTEMPTS = 3
 
+class AuditLog(db.Model):
+    __tablename__ = 'AUDIT_LOG'
+    EVENT_ID = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    EVENT_TYPE = db.Column(db.String(50), nullable=False)
+    DETAILS = db.Column(db.Text, nullable=True)
+    CREATED_AT = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    
+
 class Role:
     DRIVER = 'driver'
     SPONSOR = 'sponsor'
@@ -35,6 +43,11 @@ class User(db.Model, UserMixin):
     LOCKOUT_TIME = db.Column(db.DateTime, nullable=True)
     RESET_TOKEN = db.Column(db.String(255), nullable=True, index=True)
     RESET_TOKEN_CREATED_AT = db.Column(db.DateTime, nullable=True)
+    
+    def log_event(self, event_type: str, details: str = None):
+        log_entry = AuditLog(EVENT_TYPE=event_type, DETAILS=details)
+        db.session.add(log_entry)
+        db.session.commit()
 
     def set_password(self, password: str):
         self.PASS = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
