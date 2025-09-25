@@ -3,6 +3,33 @@ body {
     margin: 2rem;
 }
 
+.filters a {
+    margin-right: .5rem;
+    text-decoration: none;
+    color: #007bff;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 0.5rem;
+    text-align: left;
+}
+th {
+    background-color: #f6f6f6;
+}
+
+.badge {
+    padding: .15rem .4rem;
+    border-radius: .4rem;
+    border: 1px solid #ccc;
+}
+
 form {
     max-width: 300px;
     padding: 1rem;
@@ -78,4 +105,11 @@ a {
 }
 a:hover { 
     background: #0056b3; 
+}
+
+.center-image {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+   /* Optional: Adjust the image width */
 }

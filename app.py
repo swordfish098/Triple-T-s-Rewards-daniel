@@ -1,9 +1,14 @@
 import os
 from flask import Flask, render_template
 from dotenv import load_dotenv
+from flask_apscheduler import APScheduler
 from extensions import db, migrate, login_manager, csrf
 from config import Config
 from models import User
+from about.routes import update_version
+
+# Initialize scheduler
+scheduler = APScheduler()
 
 def create_app():
     # Load environment variables from .env file
@@ -47,6 +52,21 @@ def load_user(user_id: str):
     return db.session.get(User, int(user_id))
 
 app = create_app()
+
+# Configure the scheduler
+scheduler.api_enabled = True
+scheduler.init_app(app)
+
+# Add job to update version every Tuesday at midnight
+scheduler.add_job(id='update_version',
+                 func=update_version,
+                 trigger='cron',
+                 day_of_week='tue',
+                 hour=0,
+                 minute=0)
+
+# Start the scheduler
+scheduler.start()
 
 if __name__ == '__main__':
     app.run(debug=True)

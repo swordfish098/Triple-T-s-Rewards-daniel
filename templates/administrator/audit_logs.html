@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Audit Logs</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <h2>Audit Logs</h2>
+
+  <div class="filters">
+    <strong>Filter:</strong>
+    <a href="{{ url_for('administrator_bp.view_audit_logs') }}" class="badge">All</a>
+    <a href="{{ url_for('administrator_bp.view_audit_logs', type='SALES_BY_SPONSOR') }}" class="badge">Sales by Sponsor</a>
+    <a href="{{ url_for('administrator_bp.view_audit_logs', type='SALES_BY_DRIVER') }}" class="badge">Sales by Driver</a>
+    <a href="{{ url_for('administrator_bp.view_audit_logs', type='INVOICE_EVENT') }}" class="badge">Invoice</a>
+    <a href="{{ url_for('administrator_bp.view_audit_logs', type='DRIVER_POINTS') }}" class="badge">Driver Point Tracking</a>
+  </div>
+
+  {% if selected_type %}
+    <p>Showing: <strong>{{ selected_type }}</strong></p>
+  {% endif %}
+
+  <table>
+    <thead>
+      <tr>
+        <th>Time (UTC)</th>
+        <th>Type</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in logs %}
+        <tr>
+          <td>{{ row.CREATED_AT }}</td>
+          <td>{{ row.EVENT_TYPE }}</td>
+          <td><pre style="margin:0; white-space: pre-wrap;">{{ row.DETAILS }}</pre></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="3">No logs yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p style="margin-top:1rem;"><a href="{{ url_for('administrator_bp.dashboard') }}">Back to Admin Dashboard</a></p>
+</body>
+</html>
