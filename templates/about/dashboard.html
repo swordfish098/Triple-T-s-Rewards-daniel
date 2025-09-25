@@ -5,7 +5,12 @@
     <p><a href="/">Back</a></p>
     <h2 style="text-align: center;">About TTT Rewards</h2>
     <ul>
-      <img src="{{ url_for('static', filename='TTTtiger.png') }}" alt="There should be a truck here" width="1024" height="438"> 
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+      <img src="{{ url_for('static', filename='TripleTBanner.png') }}" 
+        alt="There should be a truck here" 
+        class="center-image" 
+        width="1024" 
+        height="450"> 
       <li>Team #: 12</li>
       <li>Version #: {{ version_num }}</li>
       <li>Release Date: {{ release_date.strftime('%Y-%m-%d') }}</li>
