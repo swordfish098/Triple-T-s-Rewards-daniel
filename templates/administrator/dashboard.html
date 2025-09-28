@@ -1,6 +1,10 @@
 <!doctype html>
 <html>
-  <head><meta charset="utf-8"><title>Administrator Dashboard</title></head>
+  <head>
+    <meta charset="utf-8"><title>Administrator Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  </head>
+  
   <body style="font-family: system-ui; margin:2rem;">
     <h2>Administrator Dashboard (placeholder)</h2>
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -13,8 +17,11 @@
       {% endif %}
     {% endwith %}
     <p>TODO: manage users, sponsors, drivers, reports…</p>
+    <p><a href="{{ url_for('administrator_bp.accounts') }}">Manage Active Users</a></p>
+    <p><a href="{{ url_for('administrator_bp.disabled_accounts') }}">Manage Inactive Users</a></p>
     <p><a href="{{ url_for('administrator_bp.add_user') }}">Add a New User</a></p>
-    
+    <li><a href="{{ url_for('administrator_bp.audit_menu') }}">View Audit Logs</a></li>
+    <p><a href="{{ url_for('administrator_bp.locked_users') }}">Unlock accounts</a></p>
     <a href="{{ url_for('auth.logout') }}">Logout</a>
     <p><a href="/">Back</a></p>
   </body>
