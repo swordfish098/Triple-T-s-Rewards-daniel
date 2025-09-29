@@ -3,12 +3,12 @@ from extensions import db, login_manager
 from flask_login import UserMixin
 import bcrypt
 import secrets
-from english_words import get_english_words_set
+from english_words import english_words_set
 import random
 import string
 
 LOCKOUT_ATTEMPTS = 3
-WORDS = get_english_words_set(['web2'], alpha=True, lower=True)
+WORDS = english_words_set
 
 class AuditLog(db.Model):
     __tablename__ = 'AUDIT_LOG'
