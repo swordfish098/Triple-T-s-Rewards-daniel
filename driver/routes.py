@@ -42,3 +42,35 @@ def logout():
     logout_user()
     flash("You have been logged out.", "info")
     return redirect(url_for('auth.login'))
+
+# Update Account Information
+@driver_bp.route('/update_info', methods=['GET', 'POST'])
+@role_required(Role.DRIVER, Role.SPONSOR, allow_admin=True, redirect_to='auth.login')
+def update_info():
+    from extensions import db
+    
+    if request.method == 'POST':
+        email = request.form.get('email')
+        
+        # Basic email validation
+        if not email or '@' not in email:
+            flash('Please enter a valid email address.', 'danger')
+            return redirect(url_for('driver_bp.update_info'))
+            
+        # Check if email already exists for another user
+        if User.query.filter(User.EMAIL == email, User.USER_CODE != current_user.USER_CODE).first():
+            flash('Email already in use.', 'danger')
+            return redirect(url_for('driver_bp.update_info'))
+            
+        try:
+            current_user.EMAIL = email
+            db.session.commit()
+            flash('Email updated successfully!', 'success')
+            return redirect(url_for('driver_bp.dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            flash('An error occurred while updating your email.', 'danger')
+            return redirect(url_for('driver_bp.update_info'))
+
+    # Prefill form with current user info
+    return render_template('driver/update_info.html', user=current_user)
