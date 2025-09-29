@@ -1,0 +1,40 @@
+<!-- templates/common/about.html  (rename from your current about dashboard if this is the public view) -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"><title>About</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  </head>
+  <body class="page">
+    <p><a href="/">Back</a>
+      {% if current_user.is_authenticated %}
+        Logged in as {{ current_user.USERNAME }}
+        (<a href="{{ url_for('auth.logout') }}">Logout</a>)
+      {% else %}
+        <a href="{{ url_for('auth.login') }}">Login</a>
+      {% endif %}
+      {% if current_user.is_authenticated and current_user.USER_TYPE == 'administrator' %}
+        | <a href="{{ url_for('about.edit_about') }}">Edit About</a>
+      {% endif %}
+    </p>
+
+    <h2 class="center">About TTT Rewards</h2>
+
+    <img src="{{ url_for('static', filename='TripleTBanner.png') }}"
+         alt="Triple T banner" class="center-image" width="1024" height="450">
+
+    <ul>
+      <li>Team #: {{ info.team_num or '—' }}</li>
+      <li>Version #: {{ info.version_num or version.version }}</li>
+      <li>Release Date: {{ (info.release_date or version.release_date)|string }}</li>
+      <li>Product Name: {{ info.product_name or 'Team Twelve Trucking' }}</li>
+      <li>Product Description: {{ info.product_desc or 'Coming soon…' }}</li>
+    </ul>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash-messages {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+  </body>
+</html>
