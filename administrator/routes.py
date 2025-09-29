@@ -165,7 +165,13 @@ def add_user():
             CREATED_AT=datetime.now(),
             IS_ACTIVE=1
         )
-        new_user.set_password()
+        new_pass = new_user.set_password()
+
+        flash_message = (
+        f"🚨 **TEMPORARY PASSWORD FOR TESTING:** `{new_pass}`. "
+        f"This should be replaced by a secure notification system in production. 🚨"
+        )
+        flash(flash_message, "warning")
 
         # Add the new user to the database
         db.session.add(new_user)
@@ -323,7 +329,14 @@ def enable_user(user_id):
 def reset_user_password(user_id):
     user = User.query.get_or_404(user_id)
 
-    user.set_password()
+    new_pass = user.set_password()
     db.session.commit()
+
+    flash_message = (
+        f"Password for user '{user.USERNAME}' has been successfully reset. "
+        f"🚨 **TEMPORARY PASSWORD FOR TESTING:** `{new_pass}`. "
+        f"This should be replaced by a secure notification system in production. 🚨"
+    )
+    flash(flash_message, "warning")
     
-    return redirect(url_for('administrator_bp.edit_user'))
+    return redirect(url_for('administrator_bp.edit_user', user_id=user_id))

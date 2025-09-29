@@ -8,7 +8,7 @@ import random
 import string
 
 LOCKOUT_ATTEMPTS = 3
-WORDS = english_words_set
+WORDS = list(english_words_set)
 
 class AuditLog(db.Model):
     __tablename__ = 'AUDIT_LOG'
@@ -62,11 +62,15 @@ class User(db.Model, UserMixin):
         db.session.commit()
 
     def set_password(self):
-        word = random.choice(WORDS)
+        words = list(WORDS)
+        word = random.choice(words)
         num_digits = 6
         numbers = ''.join(secrets.choice(string.digits) for _ in range(num_digits))
         password = word + numbers
         self.PASS = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+        return password
+
 
     def check_password(self, password : str) -> bool:
         return bcrypt.checkpw(password.encode('utf-8'), self.PASS.encode('utf-8'))
