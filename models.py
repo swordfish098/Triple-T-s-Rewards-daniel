@@ -47,6 +47,7 @@ class User(db.Model, UserMixin):
     LNAME = db.Column(db.String(50), nullable=False)
     EMAIL = db.Column(db.String(100), nullable=False)
     CREATED_AT = db.Column(db.DateTime, nullable=False)
+    POINTS = db.Column(db.Integer, default=0, nullable=False)
 
     #User account
     IS_ACTIVE = db.Column(db.Integer, nullable=False)
@@ -111,3 +112,16 @@ class StoreSettings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     ebay_category_id = db.Column(db.String(50), nullable=False, default='2984')
     point_ratio = db.Column(db.Integer, nullable=False, default=10)
+
+class CartItem(db.Model):
+    __tablename__ = 'CART_ITEMS'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('USERS.USER_CODE'), nullable=False)
+    item_id = db.Column(db.String(255), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    points = db.Column(db.Integer, nullable=False)
+    image_url = db.Column(db.String(255), nullable=True)
+    quantity = db.Column(db.Integer, default=1, nullable=False)
+
+    user = db.relationship('User', backref=db.backref('cart_items', lazy=True))
