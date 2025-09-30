@@ -66,7 +66,7 @@ def add_user():
 @login_required
 def review_driver_applications():
     apps = DriverApplication.query.filter_by(SPONSOR_ID=current_user.USER_CODE, STATUS="Pending").all()
-    return render_template("review_driver_applications.html", applications=apps)
+    return render_template("sponsor/review_driver_applications.html", applications=apps)
 
 @sponsor_bp.route("/applications/<int:app_id>/<decision>")
 @login_required
