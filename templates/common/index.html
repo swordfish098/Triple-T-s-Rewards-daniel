@@ -12,7 +12,7 @@
       <li><a href="{{ url_for('sponsor_bp.dashboard') }}">Sponsor Dashboard (placeholder)</a></li>
       <li><a href="{{ url_for('administrator_bp.dashboard') }}">Administrator Dashboard (placeholder)</a></li>
       <li><a href="{{ url_for('rewards_bp.store') }}">Truck Rewards Store (placeholder)</a></li>
-      <li><a href="{{ url_for('about.view_about') }}">About Page (placeholder)</a></li>
+      <li><a href="{{ url_for('about.about_page') }}">About Page (placeholder)</a></li>
       <li>
         {% if current_user.is_authenticated %}
           Logged in as {{ current_user.USERNAME }}

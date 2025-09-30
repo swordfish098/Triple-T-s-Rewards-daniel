@@ -24,11 +24,11 @@
          alt="Triple T banner" class="center-image" width="1024" height="450">
 
     <ul>
-      <li>Team #: {{ info.team_num or '—' }}</li>
-      <li>Version #: {{ info.version_num or version.version }}</li>
-      <li>Release Date: {{ (info.release_date or version.release_date)|string }}</li>
-      <li>Product Name: {{ info.product_name or 'Team Twelve Trucking' }}</li>
-      <li>Product Description: {{ info.product_desc or 'Coming soon…' }}</li>
+      <li>Team #: {{ about_info.team_num }}</li>
+      <li>Version #: {{ about_info.version_num }}</li>
+      <li>Release Date: {{ about_info.release_date.strftime('%Y-%m-%d') if about_info.release_date else 'N/A' }}</li>
+      <li>Product Name: {{ about_info.product_name or 'N/A' }}</li>
+      <li>Product Description: {{ about_info.product_desc or 'N/A' }}</li>
     </ul>
 
     {% with messages = get_flashed_messages(with_categories=true) %}

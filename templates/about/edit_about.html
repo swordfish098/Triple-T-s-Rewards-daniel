@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Edit About</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="page">
+    <h2>Edit About Information</h2>
+    
+    <form method="POST">
+        {{ form.csrf_token }}
+        <div>
+            <label for="team_num">Team Number:</label>
+            {{ form.team_num }}
+        </div>
+        <div>
+            <label for="version_num">Version Number:</label>
+            {{ form.version_num }}
+        </div>
+        <div>
+            <label for="product_name">Product Name:</label>
+            {{ form.product_name }}
+        </div>
+        <div>
+            <label for="product_desc">Product Description:</label>
+            {{ form.product_desc }}
+        </div>
+        <button type="submit">Save Changes</button>
+    </form>
+    
+    <p><a href="{{ url_for('about.about_page') }}">Back to About Page</a></p>
+</body>
+</html>

@@ -5,15 +5,17 @@ from flask_apscheduler import APScheduler
 from extensions import db, migrate, login_manager, csrf
 from config import Config
 from models import User
-
-
+from flask_wtf.csrf import CSRFProtect
+from forms import AboutForm
 
 # Initialize scheduler
 scheduler = APScheduler()
+csrf = CSRFProtect()
 
 def create_app():
     # Load environment variables from .env file
     load_dotenv()
+
 
     # Initialize Flask app
     app = Flask(__name__)
@@ -39,7 +41,6 @@ def create_app():
     from common.routes import common_bp
     from about.routes import about_bp
 
-
     app.register_blueprint(auth_bp)
     app.register_blueprint(driver_bp, url_prefix='/driver')
     app.register_blueprint(administrator_bp, url_prefix='/administrator')
@@ -60,12 +61,11 @@ scheduler.api_enabled = True
 scheduler.init_app(app)
 
 # Add job to update version every Tuesday at midnight
-scheduler.add_job(id='update_version',
-                 func=update_version,
-                 trigger='cron',
-                 day_of_week='tue',
-                 hour=0,
-                 minute=0)
+#scheduler.add_job(id='update_version',
+##                 trigger='cron',
+#                 day_of_week='tue',
+#                 hour=0,
+#                 minute=0)
 
 # Start the scheduler
 scheduler.start()
