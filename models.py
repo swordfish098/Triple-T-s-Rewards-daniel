@@ -106,7 +106,54 @@ class User(db.Model, UserMixin):
     def get_id(self):
         return str(self.USER_CODE)
 
-    
+class Driver(db.Model):
+    __tablename__ = 'DRIVERS'
+
+    DRIVER_ID = db.Column(
+        db.Integer,
+        db.ForeignKey("USERS.USER_CODE", ondelete="CASCADE"),
+        primary_key = True
+    )
+    LICENSE_NUMBER = db.Column(db.String(50), nullable=False)
+
+    applications = db.relationship("DriverApplication", back_populates="driver")
+
+class Sponsor(db.Model):
+    __tablename__ = "SPONSORS"
+
+    SPONSOR_ID = db.Column(
+        db.Integer,
+        db.ForeignKey("USERS.USER_CODE", ondelete="CASCADE"),
+        primary_key=True
+    )
+    ORG_NAME = db.Column(db.String(100), nullable=False)
+    STATUS = db.Column(db.Enum("Pending", "Approved", "Rejected", name="SPONSOR_STATUS"), default="Pending")
+
+    applications = db.relationship("DriverApplication", back_populates="sponsor")
+
+class Admin(db.Model):
+    __tablename__ = "ADMIN"
+
+    ADMIN_ID = db.Column(
+        db.Integer,
+        db.ForeignKey("USERS.USER_CODE", ondelete="CASCADE"),
+        primary_key=True
+    )
+    ROLE_TITLE = db.Column(db.String(100))
+
+class DriverApplication(db.Model):
+    __tablename__ = "DRIVER_APPLICATIONS"
+
+    APPLICATION_ID = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    DRIVER_ID = db.Column(db.Integer, db.ForeignKey("DRIVERS.DRIVER_ID", ondelete="CASCADE"))
+    SPONSOR_ID = db.Column(db.Integer, db.ForeignKey("SPONSORS.SPONSOR_ID", ondelete="CASCADE"))
+    STATUS = db.Column(db.Enum("Pending", "Accepted", "Rejected", name="DRIVER_APPLICATION_STATUS"), default="Pending")
+    REASON = db.Column(db.String(255))
+    APPLIED_AT = db.Column(db.DateTime, server_default=db.func.now())
+
+    driver = db.relationship("Driver", back_populates="applications")
+    sponsor = db.relationship("Sponsor", back_populates="applications")
+
 class StoreSettings(db.Model):
     __tablename__ = 'STORE_SETTINGS'
     id = db.Column(db.Integer, primary_key=True)

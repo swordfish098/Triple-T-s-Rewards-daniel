@@ -1,9 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_required
+from flask_login import login_required, current_user
 from common.decorators import role_required
 from models import User, Role, StoreSettings
 from extensions import db
+from models import db, DriverApplication
 from datetime import datetime # <-- Import datetime
+
 
 # Blueprint for sponsor-related routes
 sponsor_bp = Blueprint('sponsor_bp', __name__, template_folder="../templates")
@@ -89,5 +91,27 @@ def add_user():
 
         flash(f"Driver '{username}' has been created! Temporary Password: {new_pass}", "success")
         return redirect(url_for('sponsor_bp.dashboard'))
+        
+    # Show the form to add a new driver
+    return render_template('sponsor/add_user.html')
+
+# Sponsor Application
+@sponsor_bp.route("/applications")
+@login_required
+def review_driver_applications():
+    apps = DriverApplication.query.filter_by(SPONSOR_ID=current_user.USER_CODE, STATUS="Pending").all()
+    return render_template("sponsor/review_driver_applications.html", applications=apps)
+
+@sponsor_bp.route("/applications/<int:app_id>/<decision>")
+@login_required
+def driver_decision(app_id, decision):
+    app = DriverApplication.query.get_or_404(app_id)
+    if decision == "accept":
+        app.STATUS = "Accepted"
+    else:
+        app.STATUS = "Rejected"
+    db.session.commit()
+    flash(f"Driver application {decision}ed!", "info")
+    return redirect(url_for("sponsor_bp.review_driver_applications"))
 
     return render_template('sponsor/add_user.html')
