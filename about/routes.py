@@ -1,6 +1,6 @@
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from extensions import db
@@ -22,12 +22,30 @@ def save_version_info(info):
     with open(VERSION_FILE, 'w') as f:
         json.dump(info, f)
 
+def should_update_version(last_release_date: datetime) -> bool:
+    """Check if a week has passed since the last release"""
+    if not last_release_date:
+        return True
+    time_since_release = datetime.now() - last_release_date
+    return time_since_release >= timedelta(minutes=1)
+
 def update_version():
-    """Update version number and release date"""
-    info = load_version_info()
-    info["version"] = info.get("version", 0) + 1
-    info["release_date"] = datetime.now().strftime("%Y-%m-%d")
-    save_version_info(info)
+    """Update version number and release date if a week has passed"""
+    info = _get_singleton_about()
+    
+    if info is None:
+        info = AboutInfo()
+        info.team_num = 12
+        info.product_name = "Team Twelve Trucking"
+        info.product_desc = "Triple T Rewards Program"
+        info.version_num = 1
+        info.release_date = datetime.now()
+    elif should_update_version(info.release_date):
+        info.version_num += 1
+        info.release_date = datetime.now()
+    
+    db.session.add(info)
+    db.session.commit()
 
 def _get_singleton_about() -> AboutInfo | None:
     return AboutInfo.query.order_by(AboutInfo.entry_id.desc()).first()

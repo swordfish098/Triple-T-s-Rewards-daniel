@@ -40,6 +40,7 @@ def create_app():
     from truck_rewards.routes import rewards_bp
     from common.routes import common_bp
     from about.routes import about_bp
+    from about.routes import update_version
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(driver_bp, url_prefix='/driver')
@@ -48,6 +49,21 @@ def create_app():
     app.register_blueprint(rewards_bp, url_prefix='/truck-rewards')
     app.register_blueprint(about_bp, url_prefix='/about')
     app.register_blueprint(common_bp)
+
+
+    # Schedule the version update job to run weekly
+    # Check version on startup
+    with app.app_context():
+        update_version()
+    
+    # Configure scheduler to check periodically
+    scheduler.add_job(
+        id='check_version',
+        func=update_version,
+        trigger='interval',
+        hours=24  # Check once per day
+    )
+
     return app
 
 @login_manager.user_loader
@@ -55,20 +71,6 @@ def load_user(user_id: str):
     return db.session.get(User, int(user_id))
 
 app = create_app()
-
-# Configure the scheduler
-scheduler.api_enabled = True
-scheduler.init_app(app)
-
-# Add job to update version every Tuesday at midnight
-#scheduler.add_job(id='update_version',
-##                 trigger='cron',
-#                 day_of_week='tue',
-#                 hour=0,
-#                 minute=0)
-
-# Start the scheduler
-scheduler.start()
 
 if __name__ == '__main__':
     app.run(debug=True)
