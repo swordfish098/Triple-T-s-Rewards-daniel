@@ -1,5 +1,5 @@
-<!doctype html>
-<html>
+{% extends "base.html" %}
+{% block content %}
   <head><meta charset="utf-8"><title>Driver Dashboard</title></head>
   <body style="font-family: system-ui; margin:2rem;">
     <h2>Driver Dashboard (placeholder)</h2>
@@ -8,4 +8,4 @@
     <a href="{{ url_for('driver_bp.update_info') }}">Edit Account Information</a><br>
     <p><a href="/">Back</a></p>
   </body>
-</html>
+{% endblock %}

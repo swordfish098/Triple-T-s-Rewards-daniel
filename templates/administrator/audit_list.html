@@ -1,11 +1,5 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>{{ title }}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
+{% block content %}
 
   <h1>{{ title }}</h1>
 
@@ -44,6 +38,4 @@
   <p style="margin-top:1rem;">
     <a class="btn" href="{{ url_for('administrator_bp.audit_menu') }}">← Back to Audit Logs</a>
   </p>
-
-</body>
-</html>
+{% endblock %}

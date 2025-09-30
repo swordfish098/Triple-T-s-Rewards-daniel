@@ -1,0 +1,29 @@
+<nav class="site-nav">
+  <div class="nav-left">
+
+    <a class="nav-link {{ 'active' if request.endpoint == 'common.index' else '' }}"
+       href="{{ url_for('common.index') }}">Home</a>
+
+    <a class="nav-link {{ 'active' if request.endpoint == 'driver_bp.dashboard' else '' }}"
+       href="{{ url_for('driver_bp.dashboard') }}">Driver Dashboard</a>
+
+    <a class="nav-link {{ 'active' if request.endpoint == 'sponsor_bp.dashboard' else '' }}"
+       href="{{ url_for('sponsor_bp.dashboard') }}">Sponsor Dashboard</a>
+
+    <a class="nav-link"
+       href="{{ url_for('rewards_bp.store') }}">Truck Rewards Store</a>
+
+    <a class="nav-link {{ 'active' if request.endpoint == 'about_bp.view_about' else '' }}"
+       href="{{ url_for('about_bp.view_about') }}">About</a>
+  </div>
+
+  <div class="nav-right">
+    {% if current_user.is_authenticated %}
+      <span class="user-chip">Hi, {{ current_user.USERNAME }}</span>
+      <a class="btn-outline" href="{{ url_for('auth.logout') }}">Logout</a>
+    {% else %}
+      <a class="btn-primary" href="{{ url_for('auth.login') }}">Login</a>
+    {% endif %}
+  </div>
+</nav>
+<!-- templates/partials/navbar.html  (new file) -->

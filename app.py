@@ -5,7 +5,8 @@ from flask_apscheduler import APScheduler
 from extensions import db, migrate, login_manager, csrf
 from config import Config
 from models import User
-from about.routes import update_version
+from about.routes import about_bp, update_version
+
 
 # Initialize scheduler
 scheduler = APScheduler()
@@ -36,14 +37,14 @@ def create_app():
     from sponsor.routes import sponsor_bp
     from truck_rewards.routes import rewards_bp
     from common.routes import common_bp
-    from about.routes import about_bp
+    
 
+    app.register_blueprint(about_bp, url_prefix='/about')
     app.register_blueprint(auth_bp)
     app.register_blueprint(driver_bp, url_prefix='/driver')
     app.register_blueprint(administrator_bp, url_prefix='/administrator')
     app.register_blueprint(sponsor_bp, url_prefix='/sponsor')
     app.register_blueprint(rewards_bp, url_prefix='/truck-rewards')
-    app.register_blueprint(about_bp, url_prefix='/about')
     app.register_blueprint(common_bp)
     return app
 
