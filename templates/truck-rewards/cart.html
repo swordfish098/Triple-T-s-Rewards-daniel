@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<head>
+    <title>Your Shopping Cart</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/truck-rewards.css') }}">
+    <style>
+        .cart-item { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 1rem; }
+        .cart-item img { width: 100px; height: 100px; object-fit: contain; }
+        .cart-summary { margin-top: 2rem; padding-top: 1rem; border-top: 2px solid #333; }
+    </style>
+</head>
+<body>
+    <h1>Your Shopping Cart</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash-messages {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% if cart_items %}
+        <div>
+            {% for item in cart_items %}
+            <div class="cart-item">
+                <img src="{{ item.image_url or 'https://i.ebayimg.com/images/g/placeholder/s-l225.jpg' }}" alt="{{ item.title }}">
+                <div style="flex-grow: 1;">
+                    <p><strong>{{ item.title }}</strong></p>
+                    <p>{{ item.points }} points x {{ item.quantity }}</p>
+                </div>
+                <form method="POST" action="{{ url_for('rewards_bp.remove_from_cart', item_id=item.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit">Remove</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="cart-summary">
+            <h3>Total Points: {{ total_points }}</h3>
+            <p>Your Balance: {{ current_user.POINTS }} points</p>
+            {% if current_user.POINTS >= total_points %}
+                <form method="POST" action="{{ url_for('rewards_bp.checkout') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" style="background-color: green;">Checkout</button>
+                </form>
+            {% else %}
+                <p style="color: red;">You don't have enough points to checkout.</p>
+            {% endif %}
+        </div>
+    {% else %}
+        <p>Your cart is empty.</p>
+    {% endif %}
+
+    <a href="{{ url_for('rewards_bp.store') }}">Back to Store</a>
+</body>
+{% endblock %}
