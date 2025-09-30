@@ -76,26 +76,24 @@ def update_info():
     # Prefill form with current user info
     return render_template('driver/update_info.html', user=current_user)
 
-driver_bp = Blueprint("driver_bp", __name__, template_folder="../templates/driver")
-
 # Driver Application
-@driver_bp.route("/apply", methods=["GET", "POST"])
+@driver_bp.route('/driver_app', methods=['GET', 'POST'])
 @login_required
 def apply_driver():
-    sponsors = Sponsor.query.filter_by(STATUS="Approved").all()
-    if request.method == "POST":
-        sponsor_id = request.form["sponsor_id"]
+    sponsors = Sponsor.query.filter_by(STATUS='Approved').all()
+    if request.method == 'POST':
+        sponsor_id = request.form['sponsor_id']
 
         # check for duplicates
         existing = DriverApplication.query.filter_by(DRIVER_ID=current_user.USER_CODE, SPONSOR_ID=sponsor_id).first()
         if existing:
-            flash("You already applied to this sponsor.", "warning")
+            flash('You already applied to this sponsor.', 'warning')
         else:
             application = DriverApplication(DRIVER_ID=current_user.USER_CODE, SPONSOR_ID=sponsor_id)
             db.session.add(application)
             db.session.commit()
-            flash("Application submitted successfully!", "success")
+            flash('Application submitted successfully!', 'success')
 
-        return redirect(url_for("driver_bp.dashboard"))
+        return redirect(url_for('driver_bp.dashboard'))
 
-    return render_template("apply_driver.html", sponsors=sponsors)
+    return render_template('driver/driver_app.html', sponsors=sponsors)
