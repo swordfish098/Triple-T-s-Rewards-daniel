@@ -38,7 +38,7 @@ def update_settings():
 def add_user():
     if request.method == 'POST':
         username = request.form.get('username')
-        password = request.form.get('password')
+        email = request.form.get('email')
 
         existing_user = User.query.filter_by(USERNAME=username).first()
         if existing_user:
@@ -46,8 +46,10 @@ def add_user():
             return redirect(url_for('sponsor_bp.add_user'))
 
         # Create the new user with the 'driver' role
-        new_driver = User(USERNAME=username, USER_TYPE=Role.DRIVER)
-        new_driver.set_password(password)
+        new_driver = User(USERNAME=username, 
+                          EMAIL=email, 
+                          USER_TYPE=Role.DRIVER)
+        new_driver.set_password()
         
         db.session.add(new_driver)
         db.session.commit()
