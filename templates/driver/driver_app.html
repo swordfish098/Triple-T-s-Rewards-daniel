@@ -1,0 +1,10 @@
+<h2>Apply to a Sponsor</h2>
+<form method="POST">
+  <label>Choose a Sponsor:</label>
+  <select name="sponsor_id">
+    {% for s in sponsors %}
+      <option value="{{ s.SPONSOR_ID }}">{{ s.ORG_NAME }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit">Apply</button>
+</form>

@@ -8,6 +8,7 @@ from common.logging import (LOGIN_EVENT,
     SALES_BY_SPONSOR, SALES_BY_DRIVER, INVOICE_EVENT,
     DRIVER_POINTS)
 from datetime import datetime
+from models import db, Sponsor
 
 
 # Blueprint for administrator-related routes
@@ -340,3 +341,18 @@ def reset_user_password(user_id):
     flash(flash_message, "warning")
     
     return redirect(url_for('administrator_bp.edit_user', user_id=user_id))
+
+@administrator_bp.route("/sponsors")
+@login_required
+def review_sponsors():
+    sponsors = Sponsor.query.filter_by(STATUS="Pending").all()
+    return render_template("review_sponsors.html", sponsors=sponsors)
+
+@administrator_bp.route("/sponsors/<int:sponsor_id>/<decision>")
+@login_required
+def sponsor_decision(sponsor_id, decision):
+    sponsor = Sponsor.query.get_or_404(sponsor_id)
+    sponsor.STATUS = "Approved" if decision == "approve" else "Rejected"
+    db.session.commit()
+    flash(f"Sponsor {decision}d!", "info")
+    return redirect(url_for("admin_bp.review_sponsors"))
