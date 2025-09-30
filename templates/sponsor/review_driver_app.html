@@ -3,8 +3,8 @@
   {% for a in applications %}
     <li>
       Driver ID: {{ a.DRIVER_ID }} 
-      <a href="{{ url_for('sponsor_bp.driver_decision', app_id=a.APP_ID, decision='accept') }}">Accept</a> |
-      <a href="{{ url_for('sponsor_bp.driver_decision', app_id=a.APP_ID, decision='reject') }}">Reject</a>
+      <a href="{{ url_for('sponsor_bp.driver_decision', app_id=a.APPLICATION_ID, decision='accept') }}">Accept</a> |
+      <a href="{{ url_for('sponsor_bp.driver_decision', app_id=a.APPLICATION_ID, decision='reject') }}">Reject</a>
     </li>
   {% endfor %}
 </ul>
