@@ -12,12 +12,11 @@ about_bp = Blueprint("about_bp", __name__, template_folder="../templates")
 
 VERSION_FILE = os.path.join(os.path.dirname(__file__), 'version_info.json')
 
-@about_bp.get("/")
+# Public view (everyone)
+@about_bp.route('/about')
 def view_about():
-    info = AboutInfo.query.order_by(AboutInfo.entry_id.desc()).first()
-    version_info = load_version_info()
-    release_date = datetime.strptime(version_info["release_date"], "%Y-%m-%d")
-    return render_template("about/dashboard.html", info=info, release_date=release_date, version_num=version_info["version"])
+    about_info = AboutInfo.query.get(2)  # Get the last (or only) record
+    return render_template('about/dashboard.html', about_info=about_info)
 
 def load_version_info():
     if os.path.exists(VERSION_FILE):
@@ -56,12 +55,6 @@ def update_version():
 
 def _get_singleton_about() -> AboutInfo | None:
     return AboutInfo.query.order_by(AboutInfo.entry_id.desc()).first()
-
-# Public view (everyone)
-@about_bp.route('/about')
-def about_page():
-    about_info = AboutInfo.query.get(2)  # Get the last (or only) record
-    return render_template('about/dashboard.html', about_info=about_info)
 
 
 @about_bp.route("/administrator/about", methods=["GET", "POST"])
