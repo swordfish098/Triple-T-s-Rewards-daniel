@@ -13,11 +13,11 @@
         <a href="{{ url_for('auth.login') }}">Login</a>
       {% endif %}
       {% if current_user.is_authenticated and current_user.USER_TYPE == 'administrator' %}
-        | <a href="{{ url_for('about.edit_about') }}">Edit About</a>
+        | <a href="{{ url_for('about_bp.edit_about') }}">Edit About</a>
       {% endif %}
     </p>
 
-    <h2 class="center">About TTT Rewards</h2>
+    <h2>About TTT Rewards</h2>
 
     <img src="{{ url_for('static', filename='TripleTBanner.png') }}"
          alt="Triple T banner" class="center-image" width="1024" height="450">
