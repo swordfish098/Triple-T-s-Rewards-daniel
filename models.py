@@ -3,8 +3,12 @@ from extensions import db, login_manager
 from flask_login import UserMixin
 import bcrypt
 import secrets
+from english_words import english_words_set
+import random
+import string
 
 LOCKOUT_ATTEMPTS = 3
+WORDS = list(english_words_set)
 
 class AuditLog(db.Model):
     __tablename__ = 'AUDIT_LOG'
@@ -34,11 +38,19 @@ class AboutInfo(db.Model):
     
 class User(db.Model, UserMixin):
     __tablename__ = 'USERS'
+    #User PI
     USER_CODE = db.Column(db.Integer, primary_key=True)
     USERNAME = db.Column(db.String(50), unique=True, nullable=False)
     PASS = db.Column(db.String(255), nullable=True)  
     USER_TYPE = db.Column(db.String(20), nullable=False)
+    FNAME = db.Column(db.String(50), nullable=False)
+    LNAME = db.Column(db.String(50), nullable=False)
+    EMAIL = db.Column(db.String(100), nullable=False)
+    CREATED_AT = db.Column(db.DateTime, nullable=False)
+    POINTS = db.Column(db.Integer, default=0, nullable=False)
 
+    #User account
+    IS_ACTIVE = db.Column(db.Integer, nullable=False)
     FAILED_ATTEMPTS = db.Column(db.Integer, default=0, nullable=False)
     LOCKOUT_TIME = db.Column(db.DateTime, nullable=True)
     RESET_TOKEN = db.Column(db.String(255), nullable=True, index=True)
@@ -50,8 +62,16 @@ class User(db.Model, UserMixin):
         db.session.add(log_entry)
         db.session.commit()
 
-    def set_password(self, password: str):
+    def set_password(self):
+        words = list(WORDS)
+        word = random.choice(words)
+        num_digits = 6
+        numbers = ''.join(secrets.choice(string.digits) for _ in range(num_digits))
+        password = word + numbers
         self.PASS = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+        return password
+
 
     def check_password(self, password : str) -> bool:
         return bcrypt.checkpw(password.encode('utf-8'), self.PASS.encode('utf-8'))
@@ -86,9 +106,69 @@ class User(db.Model, UserMixin):
     def get_id(self):
         return str(self.USER_CODE)
 
-    
+class Driver(db.Model):
+    __tablename__ = 'DRIVERS'
+
+    DRIVER_ID = db.Column(
+        db.Integer,
+        db.ForeignKey("USERS.USER_CODE", ondelete="CASCADE"),
+        primary_key = True
+    )
+    LICENSE_NUMBER = db.Column(db.String(50), nullable=False)
+
+    applications = db.relationship("DriverApplication", back_populates="driver")
+
+class Sponsor(db.Model):
+    __tablename__ = "SPONSORS"
+
+    SPONSOR_ID = db.Column(
+        db.Integer,
+        db.ForeignKey("USERS.USER_CODE", ondelete="CASCADE"),
+        primary_key=True
+    )
+    ORG_NAME = db.Column(db.String(100), nullable=False)
+    STATUS = db.Column(db.Enum("Pending", "Approved", "Rejected", name="SPONSOR_STATUS"), default="Pending")
+
+    applications = db.relationship("DriverApplication", back_populates="sponsor")
+
+class Admin(db.Model):
+    __tablename__ = "ADMIN"
+
+    ADMIN_ID = db.Column(
+        db.Integer,
+        db.ForeignKey("USERS.USER_CODE", ondelete="CASCADE"),
+        primary_key=True
+    )
+    ROLE_TITLE = db.Column(db.String(100))
+
+class DriverApplication(db.Model):
+    __tablename__ = "DRIVER_APPLICATIONS"
+
+    APPLICATION_ID = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    DRIVER_ID = db.Column(db.Integer, db.ForeignKey("DRIVERS.DRIVER_ID", ondelete="CASCADE"))
+    SPONSOR_ID = db.Column(db.Integer, db.ForeignKey("SPONSORS.SPONSOR_ID", ondelete="CASCADE"))
+    STATUS = db.Column(db.Enum("Pending", "Accepted", "Rejected", name="DRIVER_APPLICATION_STATUS"), default="Pending")
+    REASON = db.Column(db.String(255))
+    APPLIED_AT = db.Column(db.DateTime, server_default=db.func.now())
+
+    driver = db.relationship("Driver", back_populates="applications")
+    sponsor = db.relationship("Sponsor", back_populates="applications")
+
 class StoreSettings(db.Model):
     __tablename__ = 'STORE_SETTINGS'
     id = db.Column(db.Integer, primary_key=True)
     ebay_category_id = db.Column(db.String(50), nullable=False, default='2984')
     point_ratio = db.Column(db.Integer, nullable=False, default=10)
+
+class CartItem(db.Model):
+    __tablename__ = 'CART_ITEMS'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('USERS.USER_CODE'), nullable=False)
+    item_id = db.Column(db.String(255), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    points = db.Column(db.Integer, nullable=False)
+    image_url = db.Column(db.String(255), nullable=True)
+    quantity = db.Column(db.Integer, default=1, nullable=False)
+
+    user = db.relationship('User', backref=db.backref('cart_items', lazy=True))

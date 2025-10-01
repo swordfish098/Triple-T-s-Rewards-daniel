@@ -42,12 +42,12 @@ def create_app():
     from about.routes import about_bp
     from about.routes import update_version
 
+    app.register_blueprint(about_bp, url_prefix='/about')
     app.register_blueprint(auth_bp)
     app.register_blueprint(driver_bp, url_prefix='/driver')
     app.register_blueprint(administrator_bp, url_prefix='/administrator')
     app.register_blueprint(sponsor_bp, url_prefix='/sponsor')
     app.register_blueprint(rewards_bp, url_prefix='/truck-rewards')
-    app.register_blueprint(about_bp, url_prefix='/about')
     app.register_blueprint(common_bp)
 
 

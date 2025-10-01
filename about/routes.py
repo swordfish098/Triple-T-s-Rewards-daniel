@@ -8,9 +8,16 @@ from models import AboutInfo, Role
 from common.decorators import role_required
 from forms import AboutForm
 
-about_bp = Blueprint("about", __name__, template_folder="../templates")
+about_bp = Blueprint("about_bp", __name__, template_folder="../templates")
 
 VERSION_FILE = os.path.join(os.path.dirname(__file__), 'version_info.json')
+
+@about_bp.get("/")
+def view_about():
+    info = AboutInfo.query.order_by(AboutInfo.entry_id.desc()).first()
+    version_info = load_version_info()
+    release_date = datetime.strptime(version_info["release_date"], "%Y-%m-%d")
+    return render_template("about/dashboard.html", info=info, release_date=release_date, version_num=version_info["version"])
 
 def load_version_info():
     if os.path.exists(VERSION_FILE):

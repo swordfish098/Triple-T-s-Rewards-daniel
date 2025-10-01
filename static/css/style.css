@@ -55,6 +55,67 @@ button {
     cursor: pointer;
 }
 
+:root{
+  --nav-bg: #0b63c9;      /* blue */
+  --nav-bg-hover: #084f9e;/* darker blue */
+  --nav-text: #ffffff;
+  --nav-muted: rgba(255,255,255,.85);
+  --chip-bg: rgba(255,255,255,.15);
+  --chip-border: rgba(255,255,255,.35);
+  --active-bg: rgba(255,255,255,.18);
+}
+
+* { box-sizing: border-box; }
+
+.site-nav{
+  display:flex; align-items:center; justify-content:space-between;
+  background: var(--nav-bg); color: var(--nav-text);
+  padding: .75rem 1rem; gap: 1rem;
+}
+
+.site-nav a { color: var(--nav-text); text-decoration:none; }
+
+.nav-left, .nav-right{ display:flex; align-items:center; gap: .75rem; }
+
+.brand{
+  font-weight: 700; letter-spacing:.2px; margin-right:.5rem;
+  padding:.35rem .5rem; border-radius:.5rem; background: var(--chip-bg);
+}
+
+.nav-link{
+  padding:.5rem .6rem; border-radius:.5rem;
+  transition:.15s ease-in-out;
+}
+.nav-link:hover{ background: var(--nav-bg-hover); }
+
+.nav-link.active{ background: var(--active-bg); }
+
+.user-chip{
+  padding:.35rem .6rem; border-radius: 999px;
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-border);
+  color: var(--nav-muted);
+}
+
+.btn-primary, .btn-outline{
+  padding:.45rem .8rem; border-radius:.5rem; font-weight:600;
+  transition: .15s, color .15s, border-color .15s;
+}
+.btn-primary{
+  background:#ffffff; color:#0b63c9;
+}
+.btn-primary:hover{
+  background:#e9f2ff;
+}
+.btn-outline{
+  border:1px solid var(--chip-border); color: var(--nav-text);
+}
+.btn-outline:hover{
+  background: var(--active-bg);
+}
+
+.flash-container{ margin: .75rem 0; }
+
 /* Flash message styles */
 .flash-messages {
   margin-top: 1rem;
@@ -112,4 +173,39 @@ a:hover {
   margin-left: auto;
   margin-right: auto;
    /* Optional: Adjust the image width */
+}
+
+.site-footer {
+  background-color: #003366; /* dark blue */
+  color: #fff;
+  text-align: center;
+  padding: 1rem 0;
+  margin-top: 2rem;
+}
+
+.site-footer a {
+  color: #ffffff;
+  text-decoration: none;
+  margin: 0 0.5rem;
+}
+
+.site-footer a:hover {
+  text-decoration: underline;
+}
+
+.no-bullets {
+  list-style-type: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.no-bullets li {
+  margin-bottom: 0.5rem;
+}
+
+
+/* small screens */
+@media (max-width: 720px){
+  .nav-left{ flex-wrap:wrap; gap:.5rem; }
+  .brand{ margin-bottom:.25rem; }
 }

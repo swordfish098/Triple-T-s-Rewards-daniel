@@ -1,0 +1,34 @@
+{% extends "base.html" %}   
+{% block content %}
+
+<h2>Apply to a Sponsor</h2>
+
+<!-- Show flash messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul class="flashes">
+      {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<form method="POST" action="{{ url_for('driver_bp.apply_driver') }}">
+  <div>
+    <label for="sponsor_id">Choose a Sponsor:</label>
+    <select name="sponsor_id" id="sponsor_id" required>
+      {% for s in sponsors %}
+        <option value="{{ s.SPONSOR_ID }}">{{ s.ORG_NAME }} ({{ s.STATUS }})</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div>
+    <button type="submit">Submit Application</button>
+    <a href="{{ url_for('driver_bp.dashboard') }}">Cancel</a>
+  </div>
+</form>
+
+{% endblock %}
+
