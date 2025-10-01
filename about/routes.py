@@ -53,8 +53,8 @@ def _get_singleton_about() -> AboutInfo | None:
 # Public view (everyone)
 @about_bp.route('/about')
 def about_page():
-    about_info = AboutInfo.query.first()  # Get the first (or only) record
-    return render_template('about/about.html', about_info=about_info)
+    about_info = AboutInfo.query.get(2)  # Get the last (or only) record
+    return render_template('about/dashboard.html', about_info=about_info)
 
 
 @about_bp.route("/administrator/about", methods=["GET", "POST"])
