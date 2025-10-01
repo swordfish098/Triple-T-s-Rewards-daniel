@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, Response
 from flask_login import login_user, logout_user, login_required, current_user
 from common.decorators import role_required
 from models import User, Role, AuditLog
@@ -9,11 +9,36 @@ from common.logging import (LOGIN_EVENT,
     DRIVER_POINTS)
 from datetime import datetime
 from models import db, Sponsor
-
+import csv
+from io import StringIO
 
 # Blueprint for administrator-related routes
 administrator_bp = Blueprint('administrator_bp', __name__, template_folder="../templates")
 
+@administrator_bp.get("audit_logs/export")
+@role_required(Role.ADMINISTRATOR, allow_admin=False)
+def export_audit_csv():
+    event_type = request.args.get("event_type")
+    q = AuditLog.query.order_by(AuditLog.CREATED_AT.desc())
+    if event_type:
+        q = q.filter(AuditLog.EVENT_TYPE == event_type)
+    rows = q.all()
+    
+    si = StringIO()
+    cw = csv.writer(si)
+    cw.writerow(["created_at", "event_type", "username", "id"])
+    for row in rows:
+        cw.writerow([row.CREATED_AT.strftime("%Y-%m-%d %H:%M:%S") if row.CREATED_AT else "",
+                     row.EVENT_TYPE or "",
+                     row.DETAILS or "",
+                     row.EVENT_ID or ""])
+    csv_bytes = si.getvalue().encode('utf-8')
+    filename = f"audit_logs_{event_type or 'all'}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    return Response(
+        csv_bytes,
+        mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment;filename={filename}"}
+    )
 @administrator_bp.route("/audit_logs")
 @role_required(Role.ADMINISTRATOR, allow_admin=False)
 def audit_menu():
@@ -95,7 +120,12 @@ def view_audit_logs():
     if event_type not in allowed:
         flash("Unknown audit log type.", "warning")
         return redirect(url_for("administrator_bp.audit_menu"))
-    
+
+    q = AuditLog.query.order_by(AuditLog.CREATED_AT.desc())
+    if event_type:
+        q = q.filter(AuditLog.EVENT_TYPE == event_type)
+        
+    events = q.limit(500).all()
 
     logs = (AuditLog.query
             .filter(AuditLog.EVENT_TYPE == event_type)
@@ -114,7 +144,8 @@ def view_audit_logs():
     return render_template(
         "administrator/audit_list.html",
         title=titles.get(event_type, "Unknown Event"),
-        events=logs
+        events=events,
+        event_type=event_type
     )
 
 # Logout
