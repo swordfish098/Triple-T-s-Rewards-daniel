@@ -99,7 +99,6 @@ th {
 
 .btn {
   background: var(--brand);
-  color: var(--brand-contrast);
   border: none;
   padding: .45rem .7rem;
   border-radius: .45rem;
@@ -116,6 +115,31 @@ th {
   padding: .15rem .4rem;
   border-radius: .4rem;
 }
+
+#theme-toggle {
+  background: var(--chip-bg);
+  border: 1px solid var(--border);
+  border-radius: .5rem;
+  padding: .3rem;
+  margin-left: .5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-chip {
+  background: var(--chip-bg);
+  color: var(--text);
+  padding: .3rem .6rem;
+  border-radius: .5rem;
+  font-weight: 500;
+}
+
+#theme-toggle svg {
+  color: var(--text);
+}
+
 .badge.success { background: var(--badge-success); color: #fff; border-color: var(--badge-success); }
 .badge.fail    { background: var(--badge-fail); color: #fff; border-color: var(--badge-fail); }
 .badge.logout  { background: var(--badge-logout); color: #fff; border-color: var(--badge-logout); }
