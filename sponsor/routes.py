@@ -3,6 +3,7 @@ from flask_login import login_required
 from common.decorators import role_required
 from models import User, Role, StoreSettings
 from extensions import db
+from datetime import datetime
 
 # Blueprint for sponsor-related routes
 sponsor_bp = Blueprint('sponsor_bp', __name__, template_folder="../templates")
@@ -37,18 +38,37 @@ def update_settings():
 @role_required(Role.SPONSOR, allow_admin=True)
 def add_user():
     if request.method == 'POST':
+        name = request.form.get('name')
         username = request.form.get('username')
         email = request.form.get('email')
+
+        name_parts = name.split(' ', 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1]
 
         existing_user = User.query.filter_by(USERNAME=username).first()
         if existing_user:
             flash(f"Username '{username}' already exists.", "danger")
             return redirect(url_for('sponsor_bp.add_user'))
+        
+        # Find the highest existing USER_CODE and increment it
+        last_user = User.query.order_by(User.USER_CODE.desc()).first()
+        if last_user:
+            new_user_code = last_user.USER_CODE + 1
+        else:
+            # Starting code for the first user if the table is empty
+            new_user_code = 1
 
         # Create the new user with the 'driver' role
-        new_driver = User(USERNAME=username, 
+        new_driver = User(USER_CODE=new_user_code, 
+                          USERNAME=username, 
                           EMAIL=email, 
-                          USER_TYPE=Role.DRIVER)
+                          FNAME=first_name, 
+                          LNAME=last_name, 
+                          USER_TYPE=Role.DRIVER,
+                          IS_LOCKED_OUT=0,
+                          CREATED_AT=datetime.now(),
+                          IS_ACTIVE=1)
         new_driver.set_password()
         
         db.session.add(new_driver)
