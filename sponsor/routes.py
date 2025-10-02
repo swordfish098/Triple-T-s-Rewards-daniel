@@ -107,7 +107,8 @@ def dashboard():
         settings = StoreSettings()
         db.session.add(settings)
         db.session.commit()
-    return render_template('sponsor/dashboard.html', settings=settings)
+    drivers = User.query.filter_by(USER_TYPE=Role.DRIVER).all()
+    return render_template('sponsor/dashboard.html', settings=settings, drivers=drivers)
 
 # Update Store Settings
 @sponsor_bp.route('/update_settings', methods=['POST'])
