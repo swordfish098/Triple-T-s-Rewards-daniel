@@ -1,14 +1,16 @@
 from datetime import datetime, timedelta
 from extensions import db, login_manager
-from flask_login import UserMixin
-import bcrypt
+from extensions import bcrypt
 import secrets
 from english_words import english_words_set
 import random
 import string
+from flask_login import UserMixin
 
 LOCKOUT_ATTEMPTS = 3
 WORDS = list(english_words_set)
+
+
 
 class AuditLog(db.Model):
     __tablename__ = 'AUDIT_LOG'
@@ -62,19 +64,15 @@ class User(db.Model, UserMixin):
         db.session.add(log_entry)
         db.session.commit()
 
-    def set_password(self):
-        words = list(WORDS)
-        word = random.choice(words)
-        num_digits = 6
-        numbers = ''.join(secrets.choice(string.digits) for _ in range(num_digits))
-        password = word + numbers
-        self.PASS = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    def set_password(self, password: str) -> None:
+        self.PASS = bcrypt.generate_password_hash(password).decode("utf-8")
 
-        return password
 
 
     def check_password(self, password : str) -> bool:
-        return bcrypt.checkpw(password.encode('utf-8'), self.PASS.encode('utf-8'))
+        if not self.PASS:
+            return False
+        return bcrypt.check_password_hash(self.PASS, password)
     
     def is_account_locked(self) -> bool:
         if self.LOCKOUT_TIME and datetime.utcnow() < self.LOCKOUT_TIME:
