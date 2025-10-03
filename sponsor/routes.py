@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_required
+from flask_login import login_required, current_user
 from common.decorators import role_required
 from common.logging import log_audit_event, LOGIN_EVENT
 from datetime import datetime
@@ -7,11 +7,8 @@ from sqlalchemy.exc import IntegrityError
 from models import User, Role, StoreSettings, db, DriverApplication, Sponsor
 from extensions import db
 from datetime import datetime
-<<<<<<< HEAD
-=======
 import secrets
 import string
->>>>>>> a5e2acdedaebd717b347aa67110b8863314f6cc9
 
 # Blueprint for sponsor-related routes
 sponsor_bp = Blueprint('sponsor_bp', __name__, template_folder="../templates")
@@ -149,17 +146,9 @@ def add_user():
         username = request.form.get('username')
         email = request.form.get('email')
 
-<<<<<<< HEAD
-        name_parts = name.split(' ', 1)
-        first_name = name_parts[0]
-        last_name = name_parts[1]
-
-        existing_user = User.query.filter_by(USERNAME=username).first()
-=======
         existing_user = User.query.filter(
             (User.USERNAME == username) | (User.EMAIL == email)
         ).first()
->>>>>>> a5e2acdedaebd717b347aa67110b8863314f6cc9
         if existing_user:
             flash(f"Username or email already exists.", "danger")
             return redirect(url_for('sponsor_bp.add_user'))
@@ -172,20 +161,6 @@ def add_user():
             # Starting code for the first user if the table is empty
             new_user_code = 1
 
-<<<<<<< HEAD
-        # Create the new user with the 'driver' role
-        new_driver = User(USER_CODE=new_user_code, 
-                          USERNAME=username, 
-                          EMAIL=email, 
-                          FNAME=first_name, 
-                          LNAME=last_name, 
-                          USER_TYPE=Role.DRIVER,
-                          IS_LOCKED_OUT=0,
-                          CREATED_AT=datetime.now(),
-                          IS_ACTIVE=1)
-        new_driver.set_password()
-        
-=======
         last_user = User.query.order_by(User.USER_CODE.desc()).first()
         if last_user:
             new_user_code = last_user.USER_CODE + 1
@@ -205,7 +180,6 @@ def add_user():
         )
         new_pass = new_driver.set_password()
 
->>>>>>> a5e2acdedaebd717b347aa67110b8863314f6cc9
         db.session.add(new_driver)
         db.session.commit()
 

@@ -67,7 +67,17 @@ class User(db.Model, UserMixin):
     def set_password(self, password: str) -> None:
         self.PASS = bcrypt.generate_password_hash(password).decode("utf-8")
 
-
+    def admin_set_new_pass(self) -> str:
+        word = random.choice(WORDS) 
+        num_digits = 6
+        numbers = ''.join(secrets.choice(string.digits) for _ in range(num_digits))
+        password = word + numbers
+        
+        # Hashes the password for storage
+        self.PASS = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
+        # Return the plaintext password for temporary display
+        return password
 
     def check_password(self, password : str) -> bool:
         if not self.PASS:
