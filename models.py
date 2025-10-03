@@ -34,7 +34,7 @@ class AboutInfo(db.Model):
     entry_id = db.Column(db.Integer, primary_key=True)
     team_num = db.Column(db.Integer)
     version_num = db.Column(db.Integer)
-    release_date = db.Column(db.DateTime, default=datetime.utcnow)
+    release_date = db.Column(db.DateTime, default=datetime)
     product_name = db.Column(db.String(255))
     product_desc = db.Column(db.Text)
     
