@@ -145,6 +145,7 @@ def reset_token(token: str):
     if request.method == "POST":
         new_password = request.form.get("password","")
         confirm_password = request.form.get("confirm_password","")
+        
         if not new_password or new_password != confirm_password:
             flash("Passwords do not match or are empty.", "danger")
             return render_template("common/reset_with_token.html", token=token)
@@ -153,6 +154,7 @@ def reset_token(token: str):
         user.clear_reset_token()
         user.clear_failed_attempts()  # also clear failed attempts on password reset
         db.session.commit()
+        
         flash("Password has been reset. You can now log in.", "success")
         log_audit_event("RESET SUCCESS", f"Password reset successful for user {user.USERNAME}.")
         return redirect(url_for("auth.login"))

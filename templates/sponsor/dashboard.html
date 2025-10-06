@@ -69,6 +69,9 @@
         <button type="submit">Save Changes</button>
     </form>
 
+    <p><a href="{{ url_for('sponsor_bp.create_sponsor_user') }}">Create Sponsor Account</a></p>
+    <p><a href="{{ url_for('sponsor_bp.list_sponsor_users') }}">View Sponsor Accounts</a></p>
+
     <a href="{{ url_for('auth.logout') }}">Logout</a>
     <p><a href="/">Back</a></p>
 {% endblock %}

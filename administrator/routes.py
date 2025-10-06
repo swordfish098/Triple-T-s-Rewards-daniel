@@ -361,7 +361,7 @@ def enable_user(user_id):
 def reset_user_password(user_id):
     user = User.query.get_or_404(user_id)
 
-    new_pass = user.set_password()
+    new_pass = user.admin_set_new_pass()
     db.session.commit()
 
     flash_message = (

@@ -1,14 +1,99 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from common.decorators import role_required
-from models import User, Role, StoreSettings
+from common.logging import log_audit_event, LOGIN_EVENT
+from datetime import datetime
+from sqlalchemy.exc import IntegrityError
+from models import User, Role, StoreSettings, db, DriverApplication, Sponsor
 from extensions import db
-from models import db, DriverApplication
-from datetime import datetime # <-- Import datetime
-
+from datetime import datetime
+import secrets
+import string
 
 # Blueprint for sponsor-related routes
 sponsor_bp = Blueprint('sponsor_bp', __name__, template_folder="../templates")
+
+def next_user_code():
+    last_user = User.query.order_by(User.USER_CODE.desc()).first()
+    return (last_user.USER_CODE + 1) if last_user else 1
+
+def generate_temp_password(length: int = 10) -> str:
+    alphabet = string.ascii_letters + string.digits
+    return "".join(secrets.choice(alphabet) for _ in range(length))
+
+@sponsor_bp.route("/users/new", methods=["GET", "POST"])
+@role_required(Role.SPONSOR, allow_admin=True)
+def _next_user_code():
+    last = User.query.order_by(User.USER_CODE.desc()).first()
+    return (last.USER_CODE + 1) if last else 1
+
+@sponsor_bp.route("/sponsor/users/new", methods=["GET", "POST"])
+@role_required(Role.SPONSOR, allow_admin=True)
+def create_sponsor_user():
+    if request.method == "GET":
+        return render_template("sponsor/create_user.html")
+
+    # POST
+    username = (request.form.get("username") or "").strip()
+
+    if not username:
+        flash("Username is required.", "danger")
+        return redirect(url_for("sponsor_bp.create_sponsor_user"))
+
+    # 1) Explicit duplicate check first
+    if User.query.filter_by(USERNAME=username).first():
+        flash("That username is already taken. Please pick another.", "danger")
+        return redirect(url_for("sponsor_bp.create_sponsor_user"))
+
+    # 2) Build the user with ALL required fields filled
+    new_user = User(
+        USER_CODE=_next_user_code(),
+        USERNAME=username,
+        USER_TYPE=Role.SPONSOR,
+        FNAME="Sponsor",
+        LNAME="User",
+        EMAIL=f"{username}@example.com",   # or collect a real email in the form
+        CREATED_AT=datetime.utcnow(),
+        POINTS=0,
+        IS_ACTIVE=1,
+        FAILED_ATTEMPTS=0,
+        LOCKOUT_TIME=None,
+        RESET_TOKEN=None,
+        RESET_TOKEN_CREATED_AT=None,
+        IS_LOCKED_OUT=0,
+    )
+
+    # Set a temporary password the sponsor can share with the new user
+    # (Or generate one elsewhere and display it.)
+    temp_password = "P@ssw0rd123"  # replace with your generator
+    new_user.set_password(temp_password)
+
+    try:
+        db.session.add(new_user)
+        db.session.commit()
+    except IntegrityError as e:
+        db.session.rollback()
+        # Surface the REAL reason to your logs; keep message friendly to user
+        print("IntegrityError creating sponsor user:", repr(e))
+        flash("Could not create user (constraint error). Check required fields or username.", "danger")
+        return redirect(url_for("sponsor_bp.create_sponsor_user"))
+    except Exception as e:
+        db.session.rollback()
+        print("Error creating sponsor user:", repr(e))
+        flash("Unexpected error creating user.", "danger")
+        return redirect(url_for("sponsor_bp.create_sponsor_user"))
+
+    log_audit_event("SPONSOR_CREATE_USER", f"by={current_user.USERNAME} new_user={username} role=sponsor")
+    flash(f"Sponsor account created for '{username}'. Temporary password: {temp_password}", "success")
+    return redirect(url_for("sponsor_bp.list_sponsor_users"))
+
+
+@sponsor_bp.route("/users", methods=["GET"])
+@role_required(Role.SPONSOR, allow_admin=True)
+def list_sponsor_users():
+    sponsors = User.query.filter_by(USER_TYPE=Role.SPONSOR).order_by(User.USERNAME.asc()).all()
+    return render_template("sponsor/list_users.html", users=sponsors)
+
 
 # Dashboard
 @sponsor_bp.route('/dashboard')
@@ -57,6 +142,7 @@ def award_points(driver_id):
 @role_required(Role.SPONSOR, allow_admin=True)
 def add_user():
     if request.method == 'POST':
+        name = request.form.get('name')
         username = request.form.get('username')
         email = request.form.get('email')
 
@@ -66,6 +152,14 @@ def add_user():
         if existing_user:
             flash(f"Username or email already exists.", "danger")
             return redirect(url_for('sponsor_bp.add_user'))
+        
+        # Find the highest existing USER_CODE and increment it
+        last_user = User.query.order_by(User.USER_CODE.desc()).first()
+        if last_user:
+            new_user_code = last_user.USER_CODE + 1
+        else:
+            # Starting code for the first user if the table is empty
+            new_user_code = 1
 
         last_user = User.query.order_by(User.USER_CODE.desc()).first()
         if last_user:

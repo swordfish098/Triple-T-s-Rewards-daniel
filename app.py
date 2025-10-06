@@ -7,6 +7,7 @@ from config import Config
 from models import User
 from flask_wtf.csrf import CSRFProtect
 from forms import AboutForm
+from extensions import bcrypt, migrate, login_manager, csrf, bcrypt
 
 # Initialize scheduler
 scheduler = APScheduler()
@@ -27,6 +28,7 @@ def create_app():
     login_manager.login_view = 'auth.login'
     login_manager.login_message_category = 'info'
     csrf.init_app(app)
+    bcrypt.init_app(app)
     
     @app.errorhandler(403)
     def forbidden(e):
