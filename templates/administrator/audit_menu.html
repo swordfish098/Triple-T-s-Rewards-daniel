@@ -1,12 +1,6 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Audit Logs</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-  </head>
-  <body>
-    <h1>Audit Logs</h1>
+{% extends "base.html" %}
+{% block content %}
+  <h1>Audit Logs</h1>
 
     <table>
       <thead>
@@ -56,5 +50,5 @@
     </table>
 
     <a class="back" href="{{ url_for('administrator_bp.dashboard') }}">← Back to Admin Dashboard</a>
-  </body>
-</html>
+{% endblock %}
+
