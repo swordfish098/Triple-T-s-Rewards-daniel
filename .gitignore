@@ -16,4 +16,4 @@ venv/
 ENV/
 env/
 .source/
-source/
+source/.env
