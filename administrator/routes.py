@@ -398,4 +398,4 @@ def sponsor_decision(sponsor_id, decision):
     sponsor.STATUS = "Approved" if decision == "approve" else "Rejected"
     db.session.commit()
     flash(f"Sponsor {decision}d!", "info")
-    return redirect(url_for("admin_bp.review_sponsors"))
+    return redirect(url_for("adminstrator_bp.review_sponsors"))
