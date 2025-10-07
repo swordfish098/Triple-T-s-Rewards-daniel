@@ -180,3 +180,45 @@ class CartItem(db.Model):
     quantity = db.Column(db.Integer, default=1, nullable=False)
 
     user = db.relationship('User', backref=db.backref('cart_items', lazy=True))
+
+class Notification(db.Model):
+    __tablename__ = 'NOTIFICATIONS'
+    NOTIFICATION_ID = db.Column(db.Integer, primary_key=True)
+    SENDER_CODE = db.Column(db.Integer, db.ForeignKey('USERS.USER_CODE'), nullable=False)
+    RECIPIENT_CODE = db.Column(db.Integer, db.ForeignKey('USERS.USER_CODE'), nullable=False)
+    TIMESTAMP = db.Column(db.DateTime, nullable=False)
+    MESSAGE = db.Column(db.Text, nullable=False)
+    READ_STATUS = db.Column(db.Integer, nullable=False)
+
+    sender = db.relationship(
+        'User', 
+        foreign_keys=[SENDER_CODE], 
+        backref=db.backref('notifications_sent', lazy='dynamic')
+    )
+    
+    # Relationship for the Recipient
+    recipient = db.relationship(
+        'User', 
+        foreign_keys=[RECIPIENT_CODE], 
+        backref=db.backref('notifications_received', lazy='dynamic')
+    )
+
+    def create_notification(recipient_code, sender_code, message):
+        notification = Notification(
+            RECIPIENT_CODE=recipient_code,
+            SENDER_CODE=sender_code,
+            TIMESTAMP=datetime.utcnow(),
+            MESSAGE=message,
+            READ_STATUS=0
+        )
+        db.session.add(notification)
+
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            raise e
+        
+        return notification
+
+

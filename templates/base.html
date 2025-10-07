@@ -6,6 +6,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+{% block scripts %}
+<script>
+  function fetchNotificationCount() {
+    // Only run if the user is authenticated (safety check)
+    if ("{{ current_user.is_authenticated }}" === "True") {
+      fetch('{{ url_for("notification_bp.get_unread_count") }}')
+        .then(response => {
+            if (!response.ok) {
+                console.error('Failed to fetch notifications. Status:', response.status);
+                return {}; 
+            }
+            return response.json();
+        })
+        .then(data => {
+          const countElement = document.getElementById('notification-count');
+          
+          if (data && data.count > 0) {
+            // 1. Set the number inside the bubble
+            countElement.textContent = data.count;
+            // 2. Make the bubble visible
+            countElement.style.display = 'inline-block'; 
+          } else {
+            // 3. Hide the bubble if the count is zero
+            countElement.textContent = '';
+            countElement.style.display = 'none'; 
+          }
+        })
+        .catch(error => console.error('Error fetching notifications:', error));
+    }
+  }
+
+  // Start polling
+  fetchNotificationCount();
+  setInterval(fetchNotificationCount, 30000); // Poll every 30 seconds
+</script>
+{% endblock %}
 <body>
 
     {# include universal navbar #}

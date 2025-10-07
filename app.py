@@ -43,6 +43,8 @@ def create_app():
     from common.routes import common_bp
     from about.routes import about_bp
     from about.routes import update_version
+    from notifications.routes import notification_bp
+    
 
     app.register_blueprint(about_bp, url_prefix='/about')
     app.register_blueprint(auth_bp)
@@ -51,6 +53,7 @@ def create_app():
     app.register_blueprint(sponsor_bp, url_prefix='/sponsor')
     app.register_blueprint(rewards_bp, url_prefix='/truck-rewards')
     app.register_blueprint(common_bp)
+    app.register_blueprint(notification_bp, url_prefix='/notifications')
 
 
     # Schedule the version update job to run weekly
