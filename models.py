@@ -1,3 +1,4 @@
+# triple-ts-rewards/triple-t-s-rewards/Triple-T-s-Rewards-72ca7a46f1915a7f669f3692e9b77d23b248eaee/models.py
 from datetime import datetime, timedelta
 from extensions import db, login_manager
 from extensions import bcrypt
@@ -10,15 +11,12 @@ from flask_login import UserMixin
 LOCKOUT_ATTEMPTS = 3
 WORDS = list(english_words_set)
 
-
-
 class AuditLog(db.Model):
     __tablename__ = 'AUDIT_LOG'
     EVENT_ID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     EVENT_TYPE = db.Column(db.String(50), nullable=False)
     DETAILS = db.Column(db.Text, nullable=True)
     CREATED_AT = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    
 
 class Role:
     DRIVER = 'driver'
@@ -51,6 +49,10 @@ class User(db.Model, UserMixin):
     CREATED_AT = db.Column(db.DateTime, nullable=False)
     POINTS = db.Column(db.Integer, default=0, nullable=False)
     PHONE = db.Column(db.String(15), nullable=True)
+    wants_point_notifications = db.Column(db.Boolean, default=True, nullable=False)
+    wants_order_notifications = db.Column(db.Boolean, default=True, nullable=False)
+    addresses = db.relationship('Address', backref='user', lazy=True, cascade="all, delete-orphan")
+    wishlist_items = db.relationship('WishlistItem', backref='user', lazy=True, cascade="all, delete-orphan")
 
     #User account
     IS_ACTIVE = db.Column(db.Integer, nullable=False)
@@ -74,10 +76,8 @@ class User(db.Model, UserMixin):
         numbers = ''.join(secrets.choice(string.digits) for _ in range(num_digits))
         password = word + numbers
         
-        # Hashes the password for storage
         self.PASS = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         
-        # Return the plaintext password for temporary display
         return password
 
     def check_password(self, password : str) -> bool:
@@ -117,49 +117,30 @@ class User(db.Model, UserMixin):
 
 class Driver(db.Model):
     __tablename__ = 'DRIVERS'
-
-    DRIVER_ID = db.Column(
-        db.Integer,
-        db.ForeignKey("USERS.USER_CODE", ondelete="CASCADE"),
-        primary_key = True
-    )
+    DRIVER_ID = db.Column(db.Integer, db.ForeignKey("USERS.USER_CODE", ondelete="CASCADE"), primary_key=True)
     LICENSE_NUMBER = db.Column(db.String(50), nullable=False)
-
     applications = db.relationship("DriverApplication", back_populates="driver")
 
 class Sponsor(db.Model):
     __tablename__ = "SPONSORS"
-
-    SPONSOR_ID = db.Column(
-        db.Integer,
-        db.ForeignKey("USERS.USER_CODE", ondelete="CASCADE"),
-        primary_key=True
-    )
+    SPONSOR_ID = db.Column(db.Integer, db.ForeignKey("USERS.USER_CODE", ondelete="CASCADE"), primary_key=True)
     ORG_NAME = db.Column(db.String(100), nullable=False)
     STATUS = db.Column(db.Enum("Pending", "Approved", "Rejected", name="SPONSOR_STATUS"), default="Pending")
-
     applications = db.relationship("DriverApplication", back_populates="sponsor")
 
 class Admin(db.Model):
     __tablename__ = "ADMIN"
-
-    ADMIN_ID = db.Column(
-        db.Integer,
-        db.ForeignKey("USERS.USER_CODE", ondelete="CASCADE"),
-        primary_key=True
-    )
+    ADMIN_ID = db.Column(db.Integer, db.ForeignKey("USERS.USER_CODE", ondelete="CASCADE"), primary_key=True)
     ROLE_TITLE = db.Column(db.String(100))
 
 class DriverApplication(db.Model):
     __tablename__ = "DRIVER_APPLICATIONS"
-
     APPLICATION_ID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     DRIVER_ID = db.Column(db.Integer, db.ForeignKey("DRIVERS.DRIVER_ID", ondelete="CASCADE"))
     SPONSOR_ID = db.Column(db.Integer, db.ForeignKey("SPONSORS.SPONSOR_ID", ondelete="CASCADE"))
     STATUS = db.Column(db.Enum("Pending", "Accepted", "Rejected", name="DRIVER_APPLICATION_STATUS"), default="Pending")
     REASON = db.Column(db.String(255))
     APPLIED_AT = db.Column(db.DateTime, server_default=db.func.now())
-
     driver = db.relationship("Driver", back_populates="applications")
     sponsor = db.relationship("Sponsor", back_populates="applications")
 
@@ -179,7 +160,6 @@ class CartItem(db.Model):
     points = db.Column(db.Integer, nullable=False)
     image_url = db.Column(db.String(255), nullable=True)
     quantity = db.Column(db.Integer, default=1, nullable=False)
-
     user = db.relationship('User', backref=db.backref('cart_items', lazy=True))
 
 class Notification(db.Model):
@@ -190,20 +170,10 @@ class Notification(db.Model):
     TIMESTAMP = db.Column(db.DateTime, nullable=False)
     MESSAGE = db.Column(db.Text, nullable=False)
     READ_STATUS = db.Column(db.Integer, nullable=False)
+    sender = db.relationship('User', foreign_keys=[SENDER_CODE], backref=db.backref('notifications_sent', lazy='dynamic'))
+    recipient = db.relationship('User', foreign_keys=[RECIPIENT_CODE], backref=db.backref('notifications_received', lazy='dynamic'))
 
-    sender = db.relationship(
-        'User', 
-        foreign_keys=[SENDER_CODE], 
-        backref=db.backref('notifications_sent', lazy='dynamic')
-    )
-    
-    # Relationship for the Recipient
-    recipient = db.relationship(
-        'User', 
-        foreign_keys=[RECIPIENT_CODE], 
-        backref=db.backref('notifications_received', lazy='dynamic')
-    )
-
+    @staticmethod
     def create_notification(recipient_code, sender_code, message):
         notification = Notification(
             RECIPIENT_CODE=recipient_code,
@@ -213,13 +183,29 @@ class Notification(db.Model):
             READ_STATUS=0
         )
         db.session.add(notification)
-
         try:
             db.session.commit()
         except Exception as e:
             db.session.rollback()
             raise e
-        
         return notification
+    
+class Address(db.Model):
+    __tablename__ = 'ADDRESSES'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('USERS.USER_CODE'), nullable=False)
+    street = db.Column(db.String(255), nullable=False)
+    city = db.Column(db.String(100), nullable=False)
+    state = db.Column(db.String(100), nullable=False)
+    zip_code = db.Column(db.String(20), nullable=False)
+    is_default = db.Column(db.Boolean, default=False, nullable=False)
 
-
+class WishlistItem(db.Model):
+    __tablename__ = 'WISHLIST_ITEMS'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('USERS.USER_CODE'), nullable=False)
+    item_id = db.Column(db.String(255), nullable=False, unique=True)
+    title = db.Column(db.String(255), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    points = db.Column(db.Integer, nullable=False)
+    image_url = db.Column(db.String(255), nullable=True)

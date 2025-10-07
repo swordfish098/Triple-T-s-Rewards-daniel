@@ -40,15 +40,39 @@
         <div class="cart-summary">
             <h3>Total Points: {{ total_points }}</h3>
             <p>Your Balance: {{ current_user.POINTS }} points</p>
-            {% if current_user.POINTS >= total_points %}
+            
+            {% if addresses %}
+              <div class="form-group">
+                <label for="shipping_address">Select a Shipping Address:</label>
+                <select id="shipping_address" name="shipping_address">
+                  {% for address in addresses %}
+                    <option value="{{ address.id }}" {% if address.is_default %}selected{% endif %}>
+                      {{ address.street }}, {{ address.city }}, {{ address.state }} {{ address.zip_code }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+            {% else %}
+              <p>You have no saved addresses. <a href="{{ url_for('driver_bp.add_address') }}">Add one now.</a></p>
+            {% endif %}
+
+            {% if current_user.POINTS >= total_points and addresses %}
                 <form method="POST" action="{{ url_for('rewards_bp.checkout') }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" style="background-color: green;">Checkout</button>
                 </form>
+            {% elif not addresses %}
+                <p style="color: red;">Please add a shipping address before checking out.</p>
             {% else %}
                 <p style="color: red;">You don't have enough points to checkout.</p>
             {% endif %}
         </div>
+
+        <form method="POST" action="{{ url_for('rewards_bp.clear_cart') }}" onsubmit="return confirm('Are you sure you want to clear your entire cart?');" style="margin-top: 2rem;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" style="background-color: red;">Clear Entire Cart</button>
+        </form>
+
     {% else %}
         <p>Your cart is empty.</p>
     {% endif %}

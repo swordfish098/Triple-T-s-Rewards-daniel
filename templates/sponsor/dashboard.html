@@ -1,3 +1,4 @@
+{# triple-ts-rewards/triple-t-s-rewards/Triple-T-s-Rewards-72ca7a46f1915a7f669f3692e9b77d23b248eaee/templates/sponsor/dashboard.html #}
 {% extends "base.html" %}
 {% block content %}
     <h2>Sponsor Dashboard</h2>
@@ -11,7 +12,7 @@
     {% endwith %}
 
     <div class="box" style="margin-bottom: 2rem; max-width: 600px;">
-        <h3>Award Points to Drivers</h3>
+        <h3>Award/Remove Points</h3>
         {% if drivers %}
             <table style="width: 100%;">
                 <thead>
@@ -19,6 +20,7 @@
                         <th>Driver Username</th>
                         <th>Current Points</th>
                         <th style="width: 200px;">Add Points</th>
+                        <th style="width: 300px;">Remove Points</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -31,6 +33,14 @@
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <input type="number" name="points" min="1" placeholder="Points" style="width: 100px;" required>
                                 <button type="submit" style="width: auto; padding: 0.4rem 0.8rem;">Award</button>
+                            </form>
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('sponsor_bp.remove_points', driver_id=driver.USER_CODE) }}" style="display: flex; gap: 0.5rem;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="number" name="points" min="1" placeholder="Points" style="width: 100px;" required>
+                                <input type="text" name="reason" placeholder="Reason" style="width: 150px;" required>
+                                <button type="submit" style="width: auto; padding: 0.4rem 0.8rem;">Remove</button>
                             </form>
                         </td>
                     </tr>
