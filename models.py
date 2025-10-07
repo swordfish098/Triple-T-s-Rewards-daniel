@@ -50,6 +50,7 @@ class User(db.Model, UserMixin):
     EMAIL = db.Column(db.String(100), nullable=False)
     CREATED_AT = db.Column(db.DateTime, nullable=False)
     POINTS = db.Column(db.Integer, default=0, nullable=False)
+    PHONE = db.Column(db.String(15), nullable=True)
 
     #User account
     IS_ACTIVE = db.Column(db.Integer, nullable=False)
