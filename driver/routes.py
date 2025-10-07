@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from common.decorators import role_required
 from common.logging import DRIVER_POINTS
-from models import Role, AuditLog, User, db, Sponsor, DriverApplication, Address, StoreSettings
+from models import Role, AuditLog, User, db, Sponsor, DriverApplication, Address, StoreSettings, Driver
 from extensions import bcrypt
 
 # Blueprint for driver-related routes
@@ -79,9 +79,14 @@ def settings():
 def update_contact():
     from extensions import db
     
+    driver = None
+    if current_user.USER_TYPE == "driver":
+        driver = Driver.query.get(current_user.USER_CODE)
+
     if request.method == 'POST':
         email = request.form.get('email')
         phone = request.form.get('phone')
+        license_number = request.form.get('license_number') if driver else None
 
         # Basic email validation
         if not email or '@' not in email:
@@ -106,6 +111,11 @@ def update_contact():
         try:
             current_user.EMAIL = email
             current_user.PHONE = phone
+
+            # Only drivers update license number
+            if driver is not None and license_number is not None:
+                driver.LICENSE_NUMBER = license_number
+
             db.session.commit()
             flash('Contact information updated successfully!', 'success')
             return redirect(url_for('driver_bp.dashboard'))
@@ -114,7 +124,7 @@ def update_contact():
             flash('An error occurred while updating your information', 'danger')
             return redirect(url_for('driver_bp.update_info'))
         
-    return render_template('driver/update_info.html', user=current_user)
+    return render_template('driver/update_info.html', user=current_user, driver=driver)
 
 # Update Password
 @driver_bp.route('/change_password', methods=['GET', 'POST'])
@@ -156,26 +166,37 @@ def change_password():
     return render_template('driver/update_info.html', user=current_user)
 
 # Driver Application
-@driver_bp.route('/driver_app', methods=['GET', 'POST'])
+@driver_bp.route("/driver_app", methods=["GET", "POST"])
 @login_required
 def apply_driver():
-    sponsors = Sponsor.query.filter_by(STATUS='Approved').all()
-    if request.method == 'POST':
-        sponsor_id = request.form['sponsor_id']
+    sponsors = Sponsor.query.filter_by(STATUS="Approved").all()
 
-        # check for duplicates
-        existing = DriverApplication.query.filter_by(DRIVER_ID=current_user.USER_CODE, SPONSOR_ID=sponsor_id).first()
+    if request.method == "POST":
+        sponsor_id = request.form["sponsor_id"]
+        reason = request.form.get("reason", "")
+
+        existing = DriverApplication.query.filter_by(
+            DRIVER_ID=current_user.USER_CODE,
+            SPONSOR_ID=sponsor_id
+        ).first()
+
         if existing:
-            flash('You already applied to this sponsor.', 'warning')
+            flash("You already applied to this sponsor.", "warning")
         else:
-            application = DriverApplication(DRIVER_ID=current_user.USER_CODE, SPONSOR_ID=sponsor_id)
+            application = DriverApplication(
+                DRIVER_ID=current_user.USER_CODE,
+                SPONSOR_ID=sponsor_id,
+                REASON=reason,
+                STATUS="Pending",
+                LICENSE_NUMBER=driver.LICENSE_NUMBER if driver else None
+            )
             db.session.add(application)
             db.session.commit()
-            flash('Application submitted successfully!', 'success')
+            flash("Application submitted successfully! Await sponsor review.", "success")
 
-        return redirect(url_for('driver_bp.dashboard'))
+        return redirect(url_for("driver_bp.dashboard"))
 
-    return render_template('driver/driver_app.html', sponsors=sponsors)
+    return render_template("driver/driver_app.html", sponsors=sponsors)
 
 # Address Management
 @driver_bp.route('/addresses')
