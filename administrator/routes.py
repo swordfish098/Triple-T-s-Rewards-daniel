@@ -209,6 +209,18 @@ def add_user():
         db.session.add(new_user)
         db.session.commit()
 
+        if role == "driver":
+            driver = Driver(DRIVER_ID=new_user.USER_CODE, LICENSE_NUMBER="temp_license")
+            db.session.add(driver)
+        elif role == "sponsor":
+            sponsor = Sponsor(SPONSOR_ID=new_user.USER_CODE, ORG_NAME="Temp Org", STATUS="Pending")
+            db.session.add(sponsor)
+        elif role == "admin":
+            admin = Admin(ADMIN_ID=new_user.USER_CODE)
+            db.session.add(admin)
+
+        db.session.commit()
+
         flash(f"User '{username}' created successfully with role '{role}' and code '{new_user_code}'.", "success")
         return redirect(url_for('administrator_bp.dashboard'))
 

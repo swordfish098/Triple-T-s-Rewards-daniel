@@ -35,6 +35,15 @@
                value="{{ current_user.PHONE }}"
                required>
       </div>
+      {% if driver %}
+      <div class="form-group">
+        <label for="license_number">License Number:</label>
+        <input type="text" 
+               id="license_number" 
+               name="license_number" 
+               value="{{ driver.LICENSE_NUMBER or '' }}">
+        </div>
+      {% endif %}
       <button type="submit" class="btn btn-primary">Apply Changes</button>
     </form>
 
