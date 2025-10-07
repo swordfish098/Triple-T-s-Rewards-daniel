@@ -17,3 +17,5 @@ ENV/
 env/
 .source/
 source/.env
+.env
+.env
