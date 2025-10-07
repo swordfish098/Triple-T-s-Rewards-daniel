@@ -1,12 +1,12 @@
+# triple-ts-rewards/triple-t-s-rewards/Triple-T-s-Rewards-72ca7a46f1915a7f669f3692e9b77d23b248eaee/sponsor/routes.py
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from common.decorators import role_required
-from common.logging import log_audit_event, LOGIN_EVENT
+from common.logging import log_audit_event, DRIVER_POINTS
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
-from models import User, Role, StoreSettings, db, DriverApplication, Sponsor
+from models import User, Role, StoreSettings, db, DriverApplication, Sponsor, Notification
 from extensions import db
-from datetime import datetime
 import secrets
 import string
 
@@ -131,9 +131,46 @@ def award_points(driver_id):
     if driver and points_to_add is not None:
         driver.POINTS += points_to_add
         db.session.commit()
+        log_audit_event(
+            DRIVER_POINTS,
+            f"Sponsor {current_user.USERNAME} awarded {points_to_add} points to {driver.USERNAME}."
+        )
+        if driver.wants_point_notifications:
+            Notification.create_notification(
+                recipient_code=driver.USER_CODE,
+                sender_code=current_user.USER_CODE,
+                message=f"You have been awarded {points_to_add} points by {current_user.USERNAME}."
+            )
         flash(f"Successfully awarded {points_to_add} points to {driver.USERNAME}.", "success")
     else:
         flash("Could not award points. Please try again.", "danger")
+
+    return redirect(url_for('sponsor_bp.dashboard'))
+
+# Remove Points from a Driver
+@sponsor_bp.route('/remove_points/<int:driver_id>', methods=['POST'])
+@role_required(Role.SPONSOR, allow_admin=True)
+def remove_points(driver_id):
+    driver = User.query.get_or_404(driver_id)
+    points_to_remove = request.form.get('points', type=int)
+    reason = request.form.get('reason', 'No reason provided.')
+
+    if driver and points_to_remove is not None:
+        driver.POINTS -= points_to_remove
+        db.session.commit()
+        log_audit_event(
+            DRIVER_POINTS,
+            f"Sponsor {current_user.USERNAME} removed {points_to_remove} points from {driver.USERNAME}. Reason: {reason}"
+        )
+        if driver.wants_point_notifications:
+            Notification.create_notification(
+                recipient_code=driver.USER_CODE,
+                sender_code=current_user.USER_CODE,
+                message=f"{points_to_remove} points have been removed from your account by {current_user.USERNAME}. Reason: {reason}"
+            )
+        flash(f"Successfully removed {points_to_remove} points from {driver.USERNAME}.", "success")
+    else:
+        flash("Could not remove points. Please try again.", "danger")
 
     return redirect(url_for('sponsor_bp.dashboard'))
 
@@ -207,5 +244,3 @@ def driver_decision(app_id, decision):
     db.session.commit()
     flash(f"Driver application {decision}ed!", "info")
     return redirect(url_for("sponsor_bp.review_driver_applications"))
-
-    return render_template('sponsor/add_user.html')

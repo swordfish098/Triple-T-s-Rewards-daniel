@@ -2,7 +2,7 @@
 
 from flask import Blueprint, render_template, jsonify, request, flash, redirect, url_for
 from flask_login import login_required, current_user
-from models import StoreSettings, CartItem, User
+from models import StoreSettings, CartItem, User, Notification, Address, WishlistItem
 from extensions import db
 import requests
 import os
@@ -144,7 +144,8 @@ def view_cart():
     """Displays the user's shopping cart."""
     cart_items = CartItem.query.filter_by(user_id=current_user.USER_CODE).all()
     total_points = sum(item.points * item.quantity for item in cart_items)
-    return render_template('truck-rewards/cart.html', cart_items=cart_items, total_points=total_points)
+    addresses = Address.query.filter_by(user_id=current_user.USER_CODE).all()
+    return render_template('truck-rewards/cart.html', cart_items=cart_items, total_points=total_points, addresses=addresses)
 
 @rewards_bp.route("/remove_from_cart/<int:item_id>", methods=['POST'])
 @login_required
@@ -160,6 +161,65 @@ def remove_from_cart(item_id):
     flash("Item removed from your cart.", "info")
     return redirect(url_for('rewards_bp.view_cart'))
 
+@rewards_bp.route("/cart/clear", methods=['POST'])
+@login_required
+def clear_cart():
+    """Clears all items from the user's cart."""
+    CartItem.query.filter_by(user_id=current_user.USER_CODE).delete()
+    db.session.commit()
+    flash("Your cart has been cleared.", "info")
+    return redirect(url_for('rewards_bp.view_cart'))
+
+@rewards_bp.route("/cart/count")
+@login_required
+def cart_count():
+    """Returns the total number of items in the cart."""
+    count = db.session.query(db.func.sum(CartItem.quantity)).filter_by(user_id=current_user.USER_CODE).scalar()
+    return jsonify({'count': count or 0})
+
+@rewards_bp.route("/wishlist")
+@login_required
+def view_wishlist():
+    """Displays the user's wishlist."""
+    return render_template('truck-rewards/wishlist.html')
+
+@rewards_bp.route("/wishlist/add", methods=['POST'])
+@login_required
+def add_to_wishlist():
+    """Adds an item to the current user's wishlist."""
+    item_id = request.form.get('id')
+    
+    # Prevent duplicates
+    existing_item = WishlistItem.query.filter_by(user_id=current_user.USER_CODE, item_id=item_id).first()
+    if existing_item:
+        return jsonify({"status": "error", "message": "This item is already in your wishlist."})
+
+    new_item = WishlistItem(
+        user_id=current_user.USER_CODE,
+        item_id=item_id,
+        title=request.form.get('title'),
+        price=request.form.get('price', type=float),
+        points=request.form.get('pointsEquivalent', type=int),
+        image_url=request.form.get('image')
+    )
+    db.session.add(new_item)
+    db.session.commit()
+    return jsonify({"status": "success", "message": f"'{new_item.title}' has been added to your wishlist."})
+
+@rewards_bp.route("/wishlist/remove/<int:item_id>", methods=['POST'])
+@login_required
+def remove_from_wishlist(item_id):
+    """Removes an item from the wishlist."""
+    item_to_remove = WishlistItem.query.get_or_404(item_id)
+    if item_to_remove.user_id != current_user.USER_CODE:
+        flash("You can only remove your own items.", "danger")
+        return redirect(url_for('rewards_bp.view_wishlist'))
+
+    db.session.delete(item_to_remove)
+    db.session.commit()
+    flash("Item removed from your wishlist.", "info")
+    return redirect(url_for('rewards_bp.view_wishlist'))
+
 @rewards_bp.route("/checkout", methods=['POST'])
 @login_required
 def checkout():
@@ -172,6 +232,15 @@ def checkout():
         return redirect(url_for('rewards_bp.view_cart'))
 
     current_user.POINTS -= total_points
+    
+    # Send notification if enabled
+    if current_user.wants_order_notifications:
+        Notification.create_notification(
+            recipient_code=current_user.USER_CODE,
+            sender_code=current_user.USER_CODE, # Or a system user ID if you create one
+            message=f"Your order for {total_points} points has been placed successfully!"
+        )
+
     for item in cart_items:
         db.session.delete(item)
     
@@ -179,5 +248,3 @@ def checkout():
 
     flash(f"Purchase successful! {total_points} points have been deducted.", "success")
     return redirect(url_for('rewards_bp.store'))
-
-# --- END: NEW CART FUNCTIONS ---

@@ -29,6 +29,7 @@ async function loadProducts(query = '', minPrice = '', maxPrice = '') {
         <div class="price">$${p.price.toFixed(2)}</div>
         <div class="points">${p.pointsEquivalent} points</div>
         <button class="add-to-cart-btn" data-product='${productData}'>Add to Cart</button>
+        <button class="add-to-wishlist-btn" data-product='${productData}'>Add to Wishlist</button>
       `;
       container.appendChild(card);
     });
@@ -54,12 +55,36 @@ async function addToCart(productData) {
 
     if (response.ok) {
       alert(`'${productData.title}' was added to your cart!`);
+      fetchCartCount(); // Update cart count in navbar
     } else {
       throw new Error('Failed to add item to cart.');
     }
   } catch (err) {
     console.error("Error adding to cart:", err);
     alert("There was an error adding the item to your cart.");
+  }
+}
+
+// Function to handle adding item to wishlist ---
+async function addToWishlist(productData) {
+  try {
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+
+    const response = await fetch('/truck-rewards/wishlist/add', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': csrfToken 
+      },
+      body: new URLSearchParams(productData)
+    });
+
+    const result = await response.json();
+    alert(result.message);
+
+  } catch (err) {
+    console.error("Error adding to wishlist:", err);
+    alert("There was an error adding the item to your wishlist.");
   }
 }
 
@@ -83,6 +108,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (event.target && event.target.classList.contains('add-to-cart-btn')) {
       const productData = JSON.parse(event.target.dataset.product);
       addToCart(productData);
+    }
+    if (event.target && event.target.classList.contains('add-to-wishlist-btn')) {
+      const productData = JSON.parse(event.target.dataset.product);
+      addToWishlist(productData);
     }
   });
 });
