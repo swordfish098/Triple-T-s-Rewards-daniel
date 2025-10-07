@@ -5,6 +5,8 @@
   <title>{% block title %}TTT Rewards{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+
 </head>
 {% block scripts %}
 <script>
@@ -42,6 +44,23 @@
   setInterval(fetchNotificationCount, 30000); // Poll every 30 seconds
 </script>
 {% endblock %}
+
+<script>
+  (function () {
+    try {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (savedTheme === 'dark' || (savedTheme === 'system' && prefersDark)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    } catch (e) {
+      console.error('Error loading theme:', e);
+    }
+  })();
+</script>
+
 <body>
 
     {# include universal navbar #}
@@ -62,5 +81,7 @@
     {% block content %}{% endblock %}
   </main>
     {% include "partials/footer.html" %}
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

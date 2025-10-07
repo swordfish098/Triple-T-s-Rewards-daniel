@@ -209,3 +209,22 @@ a:hover {
   .nav-left{ flex-wrap:wrap; gap:.5rem; }
   .brand{ margin-bottom:.25rem; }
 }
+
+/* form groups */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.form-group input {
+    width: 100%;
+    max-width: 300px;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
