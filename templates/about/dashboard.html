@@ -5,15 +5,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   </head>
   <body class="page">
-    <p><a href="/">Back</a>
-      {% if current_user.is_authenticated %}
-        Logged in as {{ current_user.USERNAME }}
-        (<a href="{{ url_for('auth.logout') }}">Logout</a>)
-      {% else %}
-        <a href="{{ url_for('auth.login') }}">Login</a>
-      {% endif %}
+    {% include 'partials/navbar.html' %}
       {% if current_user.is_authenticated and current_user.USER_TYPE == 'administrator' %}
-        | <a href="{{ url_for('about_bp.edit_about') }}">Edit About</a>
+        <a href="{{ url_for('about_bp.edit_about') }}">Edit About</a>
       {% endif %}
     </p>
 
@@ -35,6 +29,8 @@
         <div class="flash-messages {{ category }}">{{ message }}</div>
       {% endfor %}
     {% endwith %}
+
+    {% include 'partials/footer.html' %}
   </body>
 </html>
 
