@@ -1,18 +1,21 @@
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+pip-wheel-metadata/
 *.pyo
 *.pyd
 
 # Virtual environments
 venv/
+ENV/
+env/
+.source/
+source/.env
 .env
-*.env
-
-# Flask instance folder
-instance/
-
-# OS / IDE
-.DS_Store
-.vscode/
-.idea/
+.env

@@ -43,7 +43,10 @@
   </button>
 
       <a href="{{ url_for('rewards_bp.view_cart') }}" class="nav-link">
-        Cart
+        Cart <span id="cart-item-count"></span>
+      </a>
+      <a href="{{ url_for('rewards_bp.view_wishlist') }}" class="nav-link">
+        Wishlist
       </a>
       <span id="notification-bell-container" style="position: relative; margin-left: 10px; display: inline-block;">
         <a href="{{ url_for('notification_bp.notifications') }}" style="text-decoration: none; font-size: 1.5em; vertical-align: middle;">

@@ -1,10 +1,27 @@
 <h2>Pending Driver Applications</h2>
-<ul>
-  {% for a in applications %}
-    <li>
-      Driver ID: {{ a.DRIVER_ID }} 
-      <a href="{{ url_for('sponsor_bp.driver_decision', app_id=a.APPLICATION_ID, decision='accept') }}">Accept</a> |
-      <a href="{{ url_for('sponsor_bp.driver_decision', app_id=a.APPLICATION_ID, decision='reject') }}">Reject</a>
-    </li>
-  {% endfor %}
-</ul>
+
+{% if applications %}
+  <table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+      <th>Application ID</th>
+      <th>Driver ID</th>
+      <th>Reason</th>
+      <th>Submitted At</th>
+      <th>Actions</th>
+    </tr>
+    {% for a in applications %}
+      <tr>
+        <td>{{ a.APPLICATION_ID }}</td>
+        <td>{{ a.DRIVER_ID }}</td>
+        <td>{{ a.REASON or "No reason provided" }}</td>
+        <td>{{ a.APPLIED_AT.strftime('%Y-%m-%d %H:%M') if a.APPLIED_AT else "" }}</td>
+        <td>
+          <a href="{{ url_for('sponsor_bp.driver_decision', app_id=a.APPLICATION_ID, decision='accept') }}">Accept</a> |
+          <a href="{{ url_for('sponsor_bp.driver_decision', app_id=a.APPLICATION_ID, decision='reject') }}">Reject</a>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+{% else %}
+  <p>No pending applications.</p>
+{% endif %}

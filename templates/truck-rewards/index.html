@@ -1,9 +1,12 @@
 {% extends "base.html" %}
-{% block content %}
-  <title>Points Store</title>
+
+{% block title %}Points Store - TTT Rewards{% endblock %}
+
+{% block styles %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/truck-rewards.css') }}">
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
   <h1>My Points Store</h1>
 
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -19,6 +22,9 @@
   </div>
 
   <div id="products" class="product-grid"></div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }} {# This line is important! It includes the scripts from base.html #}
   <script src="{{ url_for('static', filename='js/truck-rewards.js') }}"></script>
-</body>
 {% endblock %}
