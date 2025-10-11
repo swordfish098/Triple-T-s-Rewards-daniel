@@ -10,10 +10,10 @@
   --color-medium-gray: #474B4F;
   --color-light-gray: #6B6E70;
 
-  /* Theme Mapping */
+  /* Theme Mapping (CRITICAL: References dynamic variables from theme.css) */
   --color-primary: var(--brand);        
   --color-secondary: var(--color-lime-green);    
-  --color-text-dark: var(--text);
+  --color-text-dark: var(--text); /* Used by headings */
   --color-text-light: var(--muted);
   --color-background: var(--bg);
   --color-surface: var(--surface);
@@ -63,13 +63,14 @@ body {
   min-height: 100vh;
   padding: 0;
   
-  /* Layout Fix */
+  /* Layout Fix: Stacks Nav, Layout, Footer */
   display: flex;
   flex-direction: column; 
 }
 
 /* Headings */
 h1, h2, h3, h4, h5, h6 {
+  /* FIX: Ensures headings use the dynamic text color */
   color: var(--text); 
   line-height: 1.2;
   margin-bottom: calc(var(--spacing-unit) * 3);
@@ -90,6 +91,7 @@ p {
 
 /* Links (General) */
 a {
+  /* FIX: Base link color uses dynamic text color for contrast */
   color: var(--text); 
   text-decoration: none;
   transition: color 0.2s ease, border-bottom 0.2s ease;
@@ -98,13 +100,14 @@ a {
 }
 
 a:hover {
+  /* Hover uses the dynamic brand color (Olive/Lime) */
   color: var(--brand); 
   border-bottom: 2px solid var(--brand);
   opacity: 1;
 }
 
 /* ----------------------------------------------------------------------- */
-/* 4. Layout Structure (Sidebar & Main Content) - USING DYNAMIC VARIABLES */
+/* 4. Layout Structure (Sidebar & Main Content) - ADJUSTED */
 /* ----------------------------------------------------------------------- */
 
 .app-layout {
@@ -123,6 +126,7 @@ a:hover {
 .app-sidebar {
   width: 250px; 
   flex-shrink: 0;
+  /* FIX: Sidebar background uses the dynamic --surface variable */
   background-color: var(--surface); 
   border-right: 1px solid var(--color-border);
   padding: calc(var(--spacing-unit) * 2) 0;
@@ -245,14 +249,34 @@ box-shadow: var(--shadow-elevated);
 
 .nav-left, .nav-right{ display:flex; align-items:center; gap: .75rem; }
 
-.brand{
-font-weight: var(--font-weight-bold); 
-letter-spacing:.2px; margin-right:.5rem;
-padding:.35rem .5rem; 
-border-radius: var(--radius-small);
-background: var(--chip-bg);
+/* Target the logo link using high specificity to remove the 'selected' background */
+a.nav-link.brand,
+a.nav-link.brand:hover,
+a.nav-link.brand.active {
+    /* CRITICAL FIX: Reset all backgrounds/shadows for both normal, hover, and active states */
+    background-color: transparent !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    
+    /* Ensure no residual border appears */
+    border: none !important;
+
+    /* Reset padding back to zero for image-only link */
+    padding: 0 !important; 
+    
+    /* Ensure the color of the link text/icon doesn't get messed up (though logo is an img) */
+    color: var(--nav-text) !important;
 }
 
+.nav-logo {
+    height: 80px; /* Adjust as necessary */
+    width: auto; 
+    display: block; 
+    border: none !important;
+    outline: none !important;
+}
+
+/* Styling for regular text links */
 .nav-link{
 padding:.5rem .6rem; 
 border-radius: var(--radius-small);
@@ -288,7 +312,7 @@ padding:.35rem .6rem; border-radius: 999px;
 .sidebar-link {
   display: block;
   padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 3);
-  color: var(--text); 
+  color: var(--text); /* Uses dynamic text color */
   font-weight: var(--font-weight-regular);
   text-decoration: none;
   transition: background-color 0.15s ease, color 0.15s ease;

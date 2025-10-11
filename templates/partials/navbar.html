@@ -2,7 +2,9 @@
   <div class="nav-left">
 
     <a class="nav-link {{ 'active' if request.endpoint == 'common.index' else '' }}"
-       href="{{ url_for('common.index') }}">Home</a>
+       href="{{ url_for('common.index') }}">
+      <img src="{{ url_for('static', filename='logo_2.png') }}" alt="Triple T's Rewards" class="nav-logo">
+    </a>
 
     <a class="nav-link {{ 'active' if request.endpoint == 'notification_bp.send_message' else '' }}"
        href="{{ url_for('notification_bp.send_message') }}">Send Message</a>
