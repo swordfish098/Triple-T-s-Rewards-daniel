@@ -1,230 +1,652 @@
+/* ----------------------------------------------------------------------- */
+/* 1. Global Variables & Configuration - SYNCED WITH THEME.CSS */
+/* ----------------------------------------------------------------------- */
+
+:root {
+  /* Mapping for static files and non-dynamic elements */
+  --color-rich-black: #0D1B2A;
+  --color-orange: #F2A249;
+  --color-white: #FFFFFF;
+  --color-navy: #0E285C;
+  --color-muted-gray: #4F4F6E;
+
+  /* Theme Mapping (These should be defined in theme.css) */
+  --color-primary: var(--color-navy);        /* Dark Navy (Brand/Main interaction) */
+  --color-secondary: var(--color-orange);    /* Orange (Accent/Hover) */
+  --color-text-dark: var(--text);            /* CRITICAL: References dynamic --text */
+  --color-text-light: var(--muted);          /* References dynamic --muted */
+  --color-background: var(--bg);             /* References dynamic --bg */
+  --color-surface: var(--surface);           /* References dynamic --surface */
+  --color-border: #E5E7EB;                   /* Light Gray (General Border) */
+  
+  /* Status Colors (Kept static for predictability) */
+  --color-success: #43A047;
+  --color-error: #E53935;   
+  
+  /* Typography */
+  --font-family-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-medium: 600;
+  --font-weight-bold: 800;
+
+  /* Spacing & Radius */
+  --spacing-unit: 8px;
+  --radius-small: 3px;
+  --radius-medium: 4px;
+  --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  --shadow-elevated: 0 5px 10px -3px rgba(0, 0, 0, 0.05);
+}
+
+/* ----------------------------------------------------------------------- */
+/* 2. CSS Reset / Normalize (Simple Version) */
+/* ----------------------------------------------------------------------- */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ----------------------------------------------------------------------- */
+/* 3. Base Body and Typography - USING DYNAMIC VARIABLES */
+/* ----------------------------------------------------------------------- */
+
+html {
+  font-size: 16px;
+}
+
 body {
-    font-family: system-ui, sans-serif;
-    margin: 2rem;
+  font-family: var(--font-family-sans);
+  line-height: 1.6;
+  color: var(--color-text-light);
+  background-color: var(--color-background);
+  min-height: 100vh;
+  padding: 0;
+  
+  /* Layout Fix */
+  display: flex;
+  flex-direction: column; 
 }
 
-.filters a {
-    margin-right: .5rem;
-    text-decoration: none;
-    color: #007bff;
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  /* CRITICAL: Now correctly inherits dynamic text color from --text via --color-text-dark */
+  color: var(--color-text-dark); 
+  line-height: 1.2;
+  margin-bottom: calc(var(--spacing-unit) * 3);
+  font-weight: var(--font-weight-bold);
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1rem;
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+h5 { font-size: 1rem; }
+h6 { font-size: 0.875rem; }
+
+/* Paragraphs */
+p {
+  margin-bottom: calc(var(--spacing-unit) * 2);
 }
 
-th, td {
-    border: 1px solid #ccc;
-    padding: 0.5rem;
-    text-align: left;
-}
-th {
-    background-color: #f6f6f6;
-}
-
-.badge {
-    padding: .15rem .4rem;
-    border-radius: .4rem;
-    border: 1px solid #ccc;
+/* Links (General) */
+a {
+  color: var(--text); 
+  text-decoration: none;
+  transition: color 0.2s ease, border-bottom 0.2s ease;
+  border-bottom: 2px solid transparent;
+  padding-bottom: 2px;
 }
 
-form {
-    max-width: 300px;
-    padding: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 8px;
+a:hover {
+  color: var(--brand); 
+  border-bottom: 2px solid var(--brand);
+  opacity: 1;
 }
 
-label {
-    display: block;
-    margin-top: 1rem;
-}
-        
-input {
-    width: 100%;
-    padding: 0.4rem;
-    margin-top: 0.2rem;
+/* ----------------------------------------------------------------------- */
+/* 4. Layout Structure (Sidebar & Main Content) - USING DYNAMIC VARIABLES */
+/* ----------------------------------------------------------------------- */
+
+.app-layout {
+  flex-grow: 1; 
+  display: flex;
+  align-items: stretch;
+  padding: 0; 
+  min-height: auto; 
+  width: 100%;
 }
 
-button {
-    margin-top: 1rem;
-    padding: 0.5rem;
-    width: 100%;
-    cursor: pointer;
+.app-layout.with-sidebar {
+  display: flex;
 }
 
-:root{
-  --nav-bg: #0b63c9;      /* blue */
-  --nav-bg-hover: #084f9e;/* darker blue */
-  --nav-text: #ffffff;
-  --nav-muted: rgba(255,255,255,.85);
-  --chip-bg: rgba(255,255,255,.15);
-  --chip-border: rgba(255,255,255,.35);
-  --active-bg: rgba(255,255,255,.18);
+.app-sidebar {
+  width: 250px; 
+  flex-shrink: 0;
+  /* CRITICAL FIX: Now correctly uses the dynamic --surface variable */
+  background-color: var(--surface); 
+  border-right: 1px solid var(--color-border);
+  padding: calc(var(--spacing-unit) * 2) 0;
+  height: 100%; 
+  display: flex;
+  flex-direction: column;
 }
 
-* { box-sizing: border-box; }
+.sidebar-list{
+  flex-grow: 1;
+}
+
+.app-main-content {
+  flex-grow: 1;
+  padding: calc(var(--spacing-unit) * 4); 
+  overflow-y: auto; 
+}
+
+/* Layout Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* ----------------------------------------------------------------------- */
+/* 5. Components: Buttons (Unified Styles) */
+/* ----------------------------------------------------------------------- */
+
+/* Base button style */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--spacing-unit) * 1.25) calc(var(--spacing-unit) * 2.5);
+  font-size: 0.95rem;
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-small);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  text-decoration: none;
+  color: var(--color-white); 
+}
+
+/* Primary Button Style */
+.btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  box-shadow: var(--shadow-subtle);
+  padding: calc(var(--spacing-unit) * .55) calc(var(--spacing-unit) * 1);
+  border-radius: var(--radius-small);
+  font-weight: var(--font-weight-medium);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-secondary);
+  color: var(--color-text-dark);
+  box-shadow: none;
+}
+
+/* Outline Button Style (using theme.css variables) */
+.btn-outline {
+  border: 1px solid var(--border); 
+  color: var(--text); 
+  background: transparent;
+  padding: calc(var(--spacing-unit) * .55) calc(var(--spacing-unit) * 1);
+  border-radius: var(--radius-small);
+  font-weight: var(--font-weight-medium);
+}
+
+.btn-outline:hover {
+  background: var(--active-bg);
+}
+
+button { 
+  margin-top: calc(var(--spacing-unit) * 2);
+  padding: calc(var(--spacing-unit) * 1.5);
+  width: 100%;
+  cursor: pointer;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--radius-small);
+  font-weight: var(--font-weight-medium);
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: var(--color-secondary);
+  color: var(--color-text-dark);
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+/* ----------------------------------------------------------------------- */
+/* 6. Components: Navigation (Dynamic Themeing Applied) */
+/* ----------------------------------------------------------------------- */
 
 .site-nav{
-  display:flex; align-items:center; justify-content:space-between;
-  background: var(--nav-bg); color: var(--nav-text);
-  padding: .75rem 1rem; gap: 1rem;
+background: var(--nav-bg); 
+color: var(--nav-text);
+display:flex; align-items:center; justify-content:space-between;
+padding: .75rem 1rem; gap: 1rem;
+box-shadow: var(--shadow-elevated); 
 }
 
-.site-nav a { color: var(--nav-text); text-decoration:none; }
+.site-nav a { 
+  color: var(--nav-text); 
+  text-decoration:none; 
+  transition: background 0.15s ease-in-out;
+}
 
 .nav-left, .nav-right{ display:flex; align-items:center; gap: .75rem; }
 
 .brand{
-  font-weight: 700; letter-spacing:.2px; margin-right:.5rem;
-  padding:.35rem .5rem; border-radius:.5rem; background: var(--chip-bg);
+font-weight: var(--font-weight-bold); 
+letter-spacing:.2px; margin-right:.5rem;
+padding:.35rem .5rem; 
+border-radius: var(--radius-small);
+background: var(--chip-bg);
 }
 
 .nav-link{
-  padding:.5rem .6rem; border-radius:.5rem;
-  transition:.15s ease-in-out;
+padding:.5rem .6rem; 
+border-radius: var(--radius-small);
 }
+
+#theme-toggle {
+  padding: 0;
+  display: inline-flex;
+  vertical-align: middle;
+}
+
 .nav-link:hover{ background: var(--nav-bg-hover); }
 
 .nav-link.active{ background: var(--active-bg); }
 
 .user-chip{
-  padding:.35rem .6rem; border-radius: 999px;
-  background: var(--chip-bg);
-  border: 1px solid var(--chip-border);
-  color: var(--nav-muted);
+background: var(--chip-bg);
+border: 1px solid var(--chip-border);
+color: var(--nav-muted);
+padding:.35rem .6rem; border-radius: 999px;
 }
 
-.btn-primary, .btn-outline{
-  padding:.45rem .8rem; border-radius:.5rem; font-weight:600;
-  transition: .15s, color .15s, border-color .15s;
-}
-.btn-primary{
-  background:#ffffff; color:#0b63c9;
-}
-.btn-primary:hover{
-  background:#e9f2ff;
-}
-.btn-outline{
-  border:1px solid var(--chip-border); color: var(--nav-text);
-}
-.btn-outline:hover{
-  background: var(--active-bg);
-}
+/* ----------------------------------------------------------------------- */
+/* 6.5 Components: Sidebar Navigation Links - USING DYNAMIC TEXT */
+/* ----------------------------------------------------------------------- */
 
-.flash-container{ margin: .75rem 0; }
-
-/* Flash message styles */
-.flash-messages {
-  margin-top: 1rem;
-  padding: 0.5rem;
-  border-radius: 5px;
-  font-weight: bold;
-}
-
-.flash-messages.success {
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-}
-
-.flash-messages.danger {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-}
-
-.flash-messages.warning {
-  background-color: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeeba;
-}
-
-.flash-messages.info {
-  background-color: #d1ecf1;
-  color: #0c5460;
-  border: 1px solid #bee5eb;}
-
-        
-.box {
-    border: 1px solid #ccc;
-    padding: 2rem;
-    border-radius: 8px;
-    max-width: 400px;
-}
-
-a {
-    display: inline-block;
-    margin-top: 1rem;
-    padding: 0.5rem 1rem;
-    background: #007bff;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-}
-a:hover { 
-    background: #0056b3; 
-}
-
-.center-image {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-   /* Optional: Adjust the image width */
-}
-
-.site-footer {
-  background-color: #003366; /* dark blue */
-  color: #fff;
-  text-align: center;
-  padding: 1rem 0;
-  margin-top: 2rem;
-}
-
-.site-footer a {
-  color: #ffffff;
-  text-decoration: none;
-  margin: 0 0.5rem;
-}
-
-.site-footer a:hover {
-  text-decoration: underline;
-}
-
-.no-bullets {
-  list-style-type: none;
-  padding-left: 0;
+.sidebar-list {
+  list-style: none;
+  padding: 0;
   margin: 0;
 }
 
-.no-bullets li {
-  margin-bottom: 0.5rem;
+.sidebar-link {
+  display: block;
+  padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 3);
+  color: var(--color-text-dark); 
+  font-weight: var(--font-weight-regular);
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-
-/* small screens */
-@media (max-width: 720px){
-  .nav-left{ flex-wrap:wrap; gap:.5rem; }
-  .brand{ margin-bottom:.25rem; }
+.sidebar-link:hover {
+  background-color: var(--color-background);
+  color: var(--color-secondary);
+  border-bottom: none;
 }
 
-/* form groups */
+.sidebar-link.active {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  font-weight: var(--font-weight-medium);
+  border-left: 3px solid var(--color-secondary);
+  padding-left: calc(var(--spacing-unit) * 3 - 3px);
+}
+
+/* Submenu container styles */
+.submenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow: hidden; 
+  transition: height 0.3s ease-in-out;
+}
+
+/* Submenu items */
+.submenu li {
+  padding-left: 10px;
+}
+
+/* Submenu links */
+.sidebar-link.sub-link {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  font-weight: var(--font-weight-regular);
+  font-size: 0.95rem;
+  opacity: 0.8;
+}
+
+/* Classes for expansion control */
+.submenu.collapsed {
+  height: 0 !important;
+}
+
+/* Style for the toggle link icon */
+.submenu-toggle .icon {
+  float: right;
+  transition: transform 0.3s;
+}
+
+.submenu-toggle.expanded .icon {
+  transform: rotate(180deg);
+}
+
+/* ----------------------------------------------------------------------- */
+/* 7. Components: Forms and Inputs - USING DYNAMIC VARIABLES */
+/* ----------------------------------------------------------------------- */
+
+/* Use the sleek card style for the main form container */
+form {
+  max-width: 400px;
+  padding: calc(var(--spacing-unit) * 4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background-color: var(--surface); /* Uses dynamic surface */
+  box-shadow: none;
+}
+
 .form-group {
-    margin-bottom: 1rem;
+  margin-bottom: calc(var(--spacing-unit) * 2);
 }
 
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: bold;
+.form-group label,
+label {
+  display: block;
+  margin-bottom: calc(var(--spacing-unit) * 0.5);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-dark); 
 }
 
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select,
 .form-group input {
-    width: 100%;
-    max-width: 300px;
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+  width: 100%;
+  padding: calc(var(--spacing-unit) * 1.25);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  font-family: var(--font-family-sans);
+  font-size: 1rem;
+  color: var(--color-text-dark);
+  background-color: var(--surface); /* Uses dynamic surface */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  margin-top: calc(var(--spacing-unit) * 0.25);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+/* ----------------------------------------------------------------------- */
+/* 8. Components: Tables and Lists - USING DYNAMIC VARIABLES */
+/* ----------------------------------------------------------------------- */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  margin-top: calc(var(--spacing-unit) * 3);
+  background-color: var(--surface); /* Uses dynamic surface */
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  box-shadow: none;
+  overflow: hidden; 
+}
+
+th, td {
+  padding: calc(var(--spacing-unit) * 2);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+}
+th:last-child, td:last-child {
+  border-right: none;
+}
+
+th {
+  background-color: var(--table-head-bg);
+  color: var(--color-text-dark);
+  font-weight: var(--font-weight-medium);
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+/* Badge */
+.badge {
+  padding: calc(var(--spacing-unit) * 0.25) calc(var(--spacing-unit) * 0.5);
+  border-radius: var(--radius-small);
+  font-size: 0.85rem;
+  font-weight: var(--font-weight-medium);
+  background-color: var(--chip-bg); 
+  color: var(--color-primary);
+  border: 1px solid var(--chip-border);
+}
+
+.filters a {
+  margin-right: calc(var(--spacing-unit));
+  text-decoration: none;
+  color: var(--color-text-light);
+  font-weight: var(--font-weight-medium);
+  padding: calc(var(--spacing-unit) * 0.5) 0;
+  border-bottom: 2px solid transparent;
+}
+
+.filters a:hover {
+  color: var(--color-primary);
+  border-bottom: 2px solid var(--color-primary);
+}
+
+/* ----------------------------------------------------------------------- */
+/* 9. Components: Messages and Utilities */
+/* ----------------------------------------------------------------------- */
+
+.flash-messages {
+  margin-top: calc(var(--spacing-unit) * 3);
+  padding: calc(var(--spacing-unit) * 2);
+  border-radius: var(--radius-small);
+  font-weight: var(--font-weight-medium);
+  box-shadow: none;
+  border: 1px solid transparent; 
+}
+
+/* Update flash message colors for better contrast on Light Background */
+.flash-messages.success {
+background-color: #D4EDDA;
+color: var(--color-success);
+border-color: var(--color-success);
+}
+
+.flash-messages.danger {
+background-color: #F8D7DA; 
+color: var(--color-error);
+border-color: var(--color-error);
+}
+
+.flash-messages.warning {
+background-color: #FFF3CD;
+color: var(--color-secondary);
+border-color: var(--color-secondary);
+}
+
+.flash-messages.info {
+background-color: #D1ECF1;
+color: var(--color-primary);
+border-color: var(--color-primary);
+}
+
+.box {
+  border: 1px solid var(--color-border);
+  padding: calc(var(--spacing-unit) * 4);
+  border-radius: var(--radius-medium);
+  max-width: 400px;
+  background-color: var(--surface); /* Uses dynamic surface */
+  box-shadow: none;
+}
+
+.center-image {
+display: block;
+margin-left: auto;
+margin-right: auto;
+border-radius: var(--radius-small);
+}
+
+/* ----------------------------------------------------------------------- */
+/* 10. Components: Footer - USING DYNAMIC VARIABLES */
+/* ----------------------------------------------------------------------- */
+
+.site-footer {
+background-color: var(--nav-bg); /* Uses dynamic nav background */
+color: var(--nav-text); /* Uses dynamic nav text color */
+text-align: center;
+padding: calc(var(--spacing-unit) * 3) 0;
+margin-top: 0; 
+border-top: 1px solid var(--color-border); 
+flex-shrink: 0;
+}
+
+.site-footer a {
+color: var(--color-text-light);
+text-decoration: none;
+margin: 0 calc(var(--spacing-unit) * 1.5);
+opacity: 0.8;
+border-bottom: none;
+padding-bottom: 0;
+}
+
+.site-footer a:hover {
+color: var(--color-secondary);
+opacity: 1;
+text-decoration: none;
+border-bottom: none;
+}
+
+.no-bullets {
+list-style-type: none;
+padding-left: 0;
+margin: 0;
+}
+
+.no-bullets li {
+margin-bottom: calc(var(--spacing-unit) * 0.5);
+}
+
+
+/* ----------------------------------------------------------------------- */
+/* 11. Responsive Adjustments for Mobile */
+/* ----------------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  /* Mobile: Collapse sidebar into a full-width block */
+  .app-layout {
+      flex-direction: column;
+      padding: calc(var(--spacing-unit) * 2) 0;
+  }
+  
+  .app-sidebar {
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px solid var(--color-border);
+      padding: calc(var(--spacing-unit) * 2) 0;
+  }
+  
+  .sidebar-list {
+      display: flex;
+      overflow-x: auto;
+      padding: 0 calc(var(--spacing-unit) * 2);
+  }
+  
+  .sidebar-link {
+      flex-shrink: 0;
+      padding: calc(var(--spacing-unit)) calc(var(--spacing-unit) * 2);
+      border-left: none !important;
+  }
+  
+  .sidebar-link.active {
+      border-bottom: 3px solid var(--color-secondary) !important;
+      border-left: none !important;
+      padding-bottom: calc(var(--spacing-unit) - 3px);
+  }
+
+  .app-main-content {
+      padding: calc(var(--spacing-unit) * 4) calc(var(--spacing-unit) * 2);
+      max-width: 100%;
+  }
+  
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.75rem; }
+  .card {
+      padding: calc(var(--spacing-unit) * 3);
+      border-radius: var(--radius-small);
+  }
+  /* Nav Specific Mobile Adjustments */
+  .site-nav{ 
+      flex-direction: column;
+      align-items: stretch;
+      gap: .75rem;
+  }
+  .nav-left{ 
+      flex-wrap: wrap; 
+      gap:.5rem; 
+      justify-content: center;
+  }
+  .brand{ margin-bottom:.25rem; }
+  .nav-right {
+      justify-content: center;
+  }
+}
+
+/* Notification Bell */
+#notification-bell-container {
+  position: relative;
+  margin-left: 10px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+#notification-bell-container a {
+  text-decoration: none;
+  color: var(--nav-text);
+  font-size: 1.5em;
+  vertical-align: middle;
+}
+
+#notification-count {
+  position: absolute;
+  top: -8px;
+  right: -12px;
+  background-color: var(--color-error);
+  color: var(--color-white);
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 0.7em;
+  line-height: 1;
+  display: none;
+  min-width: 10px;
+  text-align: center;
 }

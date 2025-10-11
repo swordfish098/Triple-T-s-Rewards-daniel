@@ -115,3 +115,66 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+  const submenuToggles = document.querySelectorAll('.submenu-toggle');
+
+  // Function to handle the collapse logic
+  function collapseMenu(targetMenu, toggleElement) {
+      // Step 1: Set height to current calculated height (e.g., 150px)
+      // This is CRITICAL for the animation to work on subsequent closes
+      targetMenu.style.height = targetMenu.scrollHeight + 'px';
+      
+      // Step 2: Use a small delay to ensure the browser registers the height change
+      setTimeout(() => {
+          targetMenu.classList.add('collapsed');
+          targetMenu.style.height = '0'; // Start transition to 0
+          toggleElement.classList.remove('expanded');
+      }, 10);
+  }
+
+  // Function to handle the expansion logic
+  function expandMenu(targetMenu, toggleElement) {
+      targetMenu.classList.remove('collapsed');
+      targetMenu.style.height = targetMenu.scrollHeight + 'px'; // Set transition height
+      toggleElement.classList.add('expanded');
+
+      // After the transition ends, set height to 'auto'
+      const transitionEndHandler = () => {
+          targetMenu.style.height = 'auto'; // CRITICAL: Allows re-opening
+          targetMenu.removeEventListener('transitionend', transitionEndHandler);
+      };
+      targetMenu.addEventListener('transitionend', transitionEndHandler, { once: true });
+  }
+
+  // --- INITIAL LOAD (Auto-Expand Active Menu) ---
+  const activeToggle = document.querySelector('.submenu-toggle.expanded');
+  if (activeToggle) {
+      const targetMenu = document.getElementById(activeToggle.getAttribute('data-target'));
+      if (targetMenu) {
+          targetMenu.classList.remove('collapsed');
+          targetMenu.style.height = 'auto'; // Start open
+      }
+  }
+  // --- END INITIAL LOAD ---
+
+  submenuToggles.forEach(toggle => {
+      toggle.addEventListener('click', function(e) {
+          e.preventDefault(); 
+          e.stopPropagation(); // Prevents double-toggling
+          
+          const targetMenu = document.getElementById(this.getAttribute('data-target'));
+          if (!targetMenu) return;
+
+          // Check if it has a height set, or if it has the collapsed class
+          // Use scrollHeight > 0 as a proxy for open state when height is 'auto'
+          const isOpen = targetMenu.style.height !== '0px' && targetMenu.classList.contains('collapsed') === false;
+
+          if (isOpen) {
+              collapseMenu(targetMenu, this);
+          } else {
+              expandMenu(targetMenu, this);
+          }
+      });
+  });
+});

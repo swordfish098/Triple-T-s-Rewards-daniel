@@ -1,53 +1,84 @@
 /* =========================
-   Base Theme Variables
+   Base Theme Variables (LIGHT MODE: Platinum Background)
    ========================= */
-:root {
-  --bg: #ffffff;
-  --text: #0f172a;
-  --muted: #6b7280;
-  --surface: #f8fafc;
-  --border: #e5e7eb;
+   :root {
+    /* New Palette Mapping */
+    --color-rich-black: #0D1B2A;
+    --color-oxford-blue: #1B263B;
+    --color-yinmn-blue: #415A77;
+    --color-silver-lake: #778DA9;
+    --color-platinum: #E0E1DD; /* Soft Off-White */
 
-  --brand: #0b5ed7;
-  --brand-contrast: #ffffff;
+    /* Keeping old accents for now, as no direct replacement was given */
+    --color-orange: #F2A249;
+    
+    /* CORE THEME COLORS (Non-Dynamic elements read from here) */
+    --bg: var(--color-platinum);      /* Platinum Background */
+    --text: var(--color-oxford-blue); /* Oxford Blue Text (Dark) */
+    --muted: var(--color-silver-lake); /* Silver Lake Blue Muted Text */
+    --surface: var(--color-platinum); /* Platinum for Cards/Surfaces */
+    --border: #C8D1DB;             /* Slightly darker than Platinum for borders */
 
-  --nav-bg: #0b3a6f;
-  --nav-link: #e6f0ff;
-  --nav-link-active: #cfe1ff;
+    --color-text-dark: var(--text);
+    --color-text-light: var(--muted);
 
-  --table-head-bg: #f3f4f6;
-  --chip-bg: #eef2ff;
+    --brand: var(--color-oxford-blue); /* Oxford Blue (Primary interaction) */
+    --brand-contrast: var(--color-platinum); 
+    
+    /* DYNAMIC NAVIGATION/FOOTER COLORS (Set to LIGHT mode defaults) */
+    --nav-bg: var(--color-oxford-blue);   /* Oxford Blue Navbar */
+    --nav-link: var(--color-platinum); 
+    --nav-link-active: var(--color-orange); /* Using old orange accent */
+    --nav-text: var(--color-platinum); /* Text color used by site-nav <a> tags */
 
-  --badge-success: #10b981;
-  --badge-fail: #ef4444;
-  --badge-logout: #f59e0b;
+    --table-head-bg: #F0F0F0; 
+    --chip-bg: #DCE3EA;      /* Light version of Silver Lake for chips */
+    
+    /* Dynamic utility/hover colors */
+    --nav-bg-hover: var(--color-yinmn-blue); /* YinMn Blue for hover effect */
+    --active-bg: rgba(119, 141, 169, 0.25); /* Tint of Silver Lake */
+    --chip-border: rgba(27, 38, 59, 0.35); /* Tint of Oxford Blue */
+
+    --badge-success: #4CAF50;
+    --badge-fail: #D32F2F;    
+    --badge-logout: var(--color-orange);  
 }
 
 /* =========================
-   Dark Mode Overrides
+   Dark Mode Overrides (Theme Toggle Activation)
    ========================= */
 [data-theme="dark"] {
-  --bg: #0b1020;
-  --text: #e5e7eb;
-  --muted: #9ca3af;
-  --surface: #0f172a;
-  --border: #1f2937;
+    /* CORE THEME COLOR OVERRIDES */
+    --bg: var(--color-rich-black);    /* Rich Black Background */
+    --text: var(--color-platinum);      /* Platinum Text */
+    --muted: var(--color-silver-lake);
+    --surface: var(--color-oxford-blue); /* Oxford Blue for Cards/Sidebar */
+    --border: var(--color-yinmn-blue);     /* YinMn Blue Border for contrast */
+    
+    --brand: var(--color-orange);    /* Orange for Primary action */
+    --brand-contrast: var(--color-rich-black); 
+    
+    /* CRITICAL ADDITION: Mapping old static vars to dynamic ones */
+    --color-text-dark: var(--text);
+    --color-text-light: var(--muted);
 
-  --brand: #3b82f6;
-  --brand-contrast: #0b1020;
+    /* DYNAMIC NAVIGATION/FOOTER COLOR OVERRIDES */
+    --nav-bg: var(--color-rich-black); 
+    --nav-link: var(--color-platinum);
+    --nav-link-active: var(--color-orange); 
+    --nav-text: var(--color-platinum); 
+    
+    --table-head-bg: var(--color-rich-black);
+    --chip-bg: var(--color-oxford-blue);      
+    
+    --nav-bg-hover: var(--color-yinmn-blue);
+    --active-bg: rgba(65, 90, 119, 0.5); /* Tint of YinMn Blue */
+    --chip-border: rgba(119, 141, 169, 0.6); /* Tint of Silver Lake */
 
-  --nav-bg: #0a1a33;
-  --nav-link: #e6f0ff;
-  --nav-link-active: #ffffff;
-
-  --table-head-bg: #111827;
-  --chip-bg: #1f2937;
-
-  --badge-success: #059669;
-  --badge-fail: #dc2626;
-  --badge-logout: #d97706;
+    --badge-success: #4CAF50;
+    --badge-fail: #D32F2F;
+    --badge-logout: var(--color-orange);
 }
-
 /* =========================
    Shared Components
    ========================= */
@@ -63,10 +94,14 @@ html, body {
 }
 
 .site-nav {
+  /* This style will dynamically change based on the 'data-theme' attribute */
   background: var(--nav-bg);
   padding: .5rem 1rem;
+  display: flex;
+  align-items: center;
 }
 .site-nav .nav-link, .site-nav .brand {
+  /* This style will dynamically change based on the 'data-theme' attribute */
   color: var(--nav-link);
   text-decoration: none;
   margin-right: 1rem;
@@ -77,8 +112,9 @@ html, body {
 }
 
 footer.site-footer {
-  background: var(--nav-bg);
-  color: var(--nav-link);
+  /* This style will dynamically change based on the 'data-theme' attribute */
+  background: var(--nav-bg); 
+  color: var(--nav-link); /* Uses nav-link color for footer text */
   padding: 1rem;
   text-align: center;
   margin-top: 2rem;
@@ -100,46 +136,4 @@ th {
 .btn {
   background: var(--brand);
   border: none;
-  padding: .45rem .7rem;
-  border-radius: .45rem;
-  cursor: pointer;
 }
-.btn-outline {
-  border: 1px solid var(--brand);
-  color: var(--brand);
-  background: transparent;
-}
-.badge {
-  background: var(--chip-bg);
-  border: 1px solid var(--border);
-  padding: .15rem .4rem;
-  border-radius: .4rem;
-}
-
-#theme-toggle {
-  background: var(--chip-bg);
-  border: 1px solid var(--border);
-  border-radius: .5rem;
-  padding: .3rem;
-  margin-left: .5rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.user-chip {
-  background: var(--chip-bg);
-  color: var(--text);
-  padding: .3rem .6rem;
-  border-radius: .5rem;
-  font-weight: 500;
-}
-
-#theme-toggle svg {
-  color: var(--text);
-}
-
-.badge.success { background: var(--badge-success); color: #fff; border-color: var(--badge-success); }
-.badge.fail    { background: var(--badge-fail); color: #fff; border-color: var(--badge-fail); }
-.badge.logout  { background: var(--badge-logout); color: #fff; border-color: var(--badge-logout); }
