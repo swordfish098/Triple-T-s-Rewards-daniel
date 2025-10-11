@@ -1,405 +1,387 @@
 /* =========================================================
-   Triple T's Rewards – APP STYLES (Layout, Components, Animations)
-   Light mode default; dark mode via [data-theme="dark"] from theme.css
+   Triple T’s Rewards – Accessible APP STYLES
+   WCAG 2.0 AA compliant (contrast, focus, landmarks)
    ========================================================= */
 
-/* 0) Fonts (Modern) */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;800&display=swap');
+   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;800&display=swap');
 
-/* 1) Reset & Base */
-*, *::before, *::after { box-sizing: border-box; }
-html { font-size: 16px; }
-body {
-  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
-               Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
-  line-height: 1.6;
-}
-
-/* Better default link styles (underline on hover for clarity) */
-a {
-  color: var(--text);
-  text-decoration: none;
-  border-bottom: 2px solid transparent;
-  transition: color .2s ease, border-color .2s ease;
-}
-a:hover {
-  color: var(--brand);
-  border-bottom-color: var(--brand);
-}
-
-/* Headings */
-h1, h2, h3, h4, h5, h6 {
-  color: var(--text);
-  line-height: 1.2;
-  margin: 0 0 0.75rem 0;
-  font-weight: 600;
-}
-h1 { font-size: 2.2rem; }
-h2 { font-size: 1.8rem; }
-h3 { font-size: 1.35rem; }
-
-/* Accent underline for page titles in main content */
-.app-main-content h1::after,
-.app-main-content h2::after {
-  content: "";
-  display: block;
-  width: 80px;
-  height: 3px;
-  margin-top: .35rem;
-  background-color: var(--brand-accent);
-}
-
-/* Accessibility focus ring */
-:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-  border-radius: 6px;
-}
-
-/* 2) App Shell Layout
-   ----------------------------------------------------- */
-.app-root {
-  min-height: 100vh;
-  display: grid;
-  grid-template-rows: auto 1fr auto; /* header, content, footer */
-  background: var(--bg);
-}
-
-/* Navbar layout: logo left, everything else right */
-.site-nav {
-  position: sticky;
-  top: 0;
-  z-index: var(--z-header);
-  background: var(--nav-bg);
-  color: var(--nav-text);
-  display: flex;
-  align-items: center;
-  justify-content: space-between; /* This does the main spacing */
-  gap: 1rem;
-  padding: 0.75rem 1rem;
-  box-shadow: var(--shadow-header);
-}
-
-/* Keep logo section left-aligned */
-.nav-left {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  justify-content: flex-start;
-}
-
-/* Push everything else (nav links, toggle, profile, etc.) to the right */
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  justify-content: flex-end; /* Forces them to align right */
-  margin-left: auto; /* This is key to push it all the way right */
-}
-
-.nav-link, .brand {
-  color: var(--nav-link);
-  text-decoration: none;
-}
-.nav-link.active {
-  color: var(--nav-link-active);
-  font-weight: 600;
-}
-.brand { font-weight: 800; letter-spacing: .2px; }
-
-.nav-logo {
-  height: 80px;     /* Adjust as needed */
-  width: auto;      /* Maintain aspect ratio */
-  max-width: 140px; /* Prevent oversized horizontal logos */
-  object-fit: contain;
-  display: block;
-}
-
-/* Minimal icon-only sidebar toggle (top-left in header) */
-.sidebar-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--nav-link);
-  cursor: pointer;
-  transition: background .15s ease, transform .15s ease;
-}
-.sidebar-toggle:hover { background: var(--nav-bg-hover); }
-.sidebar-toggle:active { transform: scale(0.98); }
-
-/* Hamburger icon (pure CSS) */
-.sidebar-toggle .bar {
-  display: block;
-  width: 18px;
-  height: 2px;
-  background: currentColor;
-  margin: 3px 0;
-  border-radius: 2px;
-}
-
-/* Content area: sidebar + main */
-.app-layout {
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  gap: 0;
-  min-height: 0; /* allow children to size */
-}
-
-/* Sidebar (fixed on desktop) */
-.app-sidebar {
-  position: sticky;
-  top: 0;                         /* stick under the header */
-  align-self: start;
-  height: calc(100vh - 64px);     /* approx header height */
-  background: var(--sidebar-bg);
-  color: var(--sidebar-text);
-  border-right: 1px solid var(--border);
-  z-index: var(--z-sidebar);
-  display: flex;
-  flex-direction: column;
-  padding: .5rem 0;
-}
-
-/* Sidebar list + links */
-.sidebar-list { list-style: none; margin: 0; padding: 0; }
-.sidebar-list li { margin: 2px 0; }
-.sidebar-link {
-  display: block;
-  padding: .75rem 1.25rem;
-  color: var(--sidebar-text);
-  border-left: 3px solid transparent;
-  transition: background .15s ease, color .15s ease, border-color .15s ease;
-}
-.sidebar-link:hover {
-  background: var(--sidebar-hover-bg);
-  color: #FFFFFF;
-}
-.sidebar-link.active {
-  background: var(--sidebar-active-bg);
-  border-left-color: var(--sidebar-active-border);
-  font-weight: 600;
-}
-
-/* Sidebar submenu: animated height reveal */
-.submenu {
-  overflow: hidden;
-  height: 0;                         /* start collapsed */
-  transition: height 0.28s ease;     /* enables smooth animation */
-  will-change: height;
-}
-
-/* Collapsed state (JS toggles this) */
-.submenu.collapsed {
-  height: 0 !important;
-}
-
-/* Optional: caret rotation if you use an icon inside the toggle */
-.submenu-toggle .icon {
-  transition: transform 0.28s ease;
-}
-.submenu-toggle.expanded .icon {
-  transform: rotate(180deg);
-}
-
-
-/* Main content */
-.app-main-content {
-  background: var(--bg);
-  color: var(--text);
-  padding: 1.25rem 1.5rem;
-}
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-/* Footer */
-.site-footer {
-  background: var(--nav-bg);
-  color: var(--nav-text);
-  text-align: center;
-  padding: .9rem 1rem;
-  border-top: 1px solid var(--border);
-  font-size: .9rem;
-}
-
-/* 3) Cards, Tables, Forms
-   ----------------------------------------------------- */
-.card {
-  background: var(--surface);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 1rem 1.25rem;
-  box-shadow: var(--shadow-raised);
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1.25rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  overflow: hidden;
-}
-th, td {
-  padding: .9rem 1rem;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-}
-th { background: var(--table-head-bg); color: var(--text); font-weight: 600; }
-tr:last-child td { border-bottom: none; }
-
-form {
-  max-width: 480px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 1.25rem;
-}
-label { display: block; margin-bottom: .35rem; font-weight: 500; color: var(--text); }
-input[type="text"], input[type="email"], input[type="password"],
-select, textarea {
-  width: 100%;
-  padding: .75rem .85rem;
-  background: var(--bg);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  transition: box-shadow .15s ease, border-color .15s ease;
-}
-input:focus, select:focus, textarea:focus {
-  border-color: var(--brand);
-  box-shadow: var(--focus-ring);
-}
-
-/* 4) Buttons
-   ----------------------------------------------------- */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: .45rem;
-  padding: .65rem 1.1rem;
-  font-size: .95rem;
-  font-weight: 600;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: background .15s ease, color .15s ease, border-color .15s ease, transform .02s ease;
-}
-.btn:active { transform: translateY(0.5px); }
-
-.btn-primary {
-  background: var(--brand);
-  color: var(--brand-contrast);
-  border-color: transparent;
-}
-.btn-primary:hover { background: var(--brand-accent); color: #0F1419; }
-
-.btn-outline {
-  background: transparent;
-  color: var(--text);
-  border-color: var(--border);
-}
-.btn-outline:hover {
-  background: var(--sidebar-hover-bg);
-  color: #FFFFFF;
-}
-
-.btn-icon {
-  width: 36px; height: 36px;
-  display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-}
-.btn-icon:hover { background: var(--sidebar-hover-bg); color: #FFFFFF; }
-
-/* 5) Badges / Chips / Alerts
-   ----------------------------------------------------- */
-.badge {
-  display: inline-block;
-  padding: .2rem .5rem;
-  border-radius: 999px;
-  background: var(--chip-bg);
-  border: 1px solid var(--chip-border);
-  color: var(--brand);
-  font-size: .8rem;
-  font-weight: 600;
-}
-
-.alert {
-  padding: .8rem 1rem;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  margin-top: 1rem;
-}
-.alert.success { background: #D4EDDA; color: var(--success); border-color: var(--success); }
-.alert.warning { background: #FFF3CD; color: #9A6B00; border-color: #E7C468; }
-.alert.error   { background: #F8D7DA; color: var(--error);   border-color: var(--error); }
-
-/* 6) Mobile Sidebar (Collapsible) + Animations
-   ----------------------------------------------------- */
-/* Strategy:
-   - Desktop/tablet: sidebar visible and fixed.
-   - <= 1024px: sidebar becomes off-canvas. Toggled by adding .is-sidebar-open on <body>.
-*/
-
-@media (max-width: 1024px) {
-  .app-layout {
-    grid-template-columns: 1fr; /* hide the "space" for sidebar */
-  }
-
-  .app-sidebar {
-    position: fixed;
-    top: 64px;                           /* header height (approx) */
-    left: 0;
-    height: calc(100vh - 64px);
-    width: 280px;
-    transform: translateX(-100%);        /* off-canvas by default */
-    transition: transform .28s ease;     /* smooth slide-in/out */
-    box-shadow: 8px 0 18px rgba(0,0,0,0.25);
-  }
-
-  /* When body has .is-sidebar-open, reveal it */
-  body.is-sidebar-open .app-sidebar {
-    transform: translateX(0);
-  }
-
-  /* Optional page overlay when sidebar is open */
-  .sidebar-overlay {
-    content: "";
-    position: fixed; inset: 64px 0 0 0; /* below header */
-    background: rgba(0,0,0,0.35);
-    opacity: 0; pointer-events: none;
-    transition: opacity .2s ease;
-    z-index: var(--z-overlay);
-  }
-  body.is-sidebar-open .sidebar-overlay {
-    opacity: 1; pointer-events: auto;
-  }
-
-  /* Main content padding on mobile */
-  .app-main-content {
-    padding: 1rem;
-  }
-}
-
-/* Reduced motion preference */
-@media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; animation: none !important; }
-}
-
-/* 7) Utility classes
-   ----------------------------------------------------- */
-.text-muted { color: var(--muted) !important; }
-.hidden { display: none !important; }
-.spacer { height: 1rem; }
-
+   /* Reset */
+   *, *::before, *::after { box-sizing: border-box; }
+   html { font-size: 16px; }
+   body {
+     font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
+                  Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
+     line-height: 1.6;
+   }
+   
+   /* ================= Links ================= */
+   /* Clean, professional links (no underline) */
+   a {
+     color: var(--link-color);
+     text-decoration: none;
+     border-bottom: none;
+     transition: color 0.2s ease;
+   }
+   a:hover,
+   a:focus-visible {
+     color: var(--link-color-hover);
+     text-decoration: none;
+     border-bottom: none;
+   }
+   
+   /* ================= Headings ================= */
+   h1, h2, h3, h4, h5, h6 {
+     color: var(--text);
+     line-height: 1.2;
+     margin: 0 0 0.75rem 0;
+     font-weight: 600;
+   }
+   h1 { font-size: 2.2rem; }
+   h2 { font-size: 1.8rem; }
+   h3 { font-size: 1.35rem; }
+   
+   .app-main-content h1::after,
+   .app-main-content h2::after {
+     content: "";
+     display: block;
+     width: 80px;
+     height: 3px;
+     margin-top: 0.35rem;
+     background-color: var(--brand-accent);
+   }
+   
+   /* ================= Focus ================= */
+   :focus-visible {
+     outline: none;
+     box-shadow: var(--focus-ring);
+     border-radius: 6px;
+   }
+   
+   /* ================= Layout / Header ================= */
+   .app-root {
+     min-height: 100vh;
+     display: grid;
+     grid-template-rows: auto 1fr auto;
+     background: var(--bg);
+   }
+   
+   .site-nav {
+     position: sticky;
+     top: 0;
+     z-index: var(--z-header);
+     background: var(--nav-bg);
+     color: var(--nav-text);
+     display: flex;
+     align-items: center;
+     justify-content: space-between;
+     gap: 1rem;
+     padding: 0.75rem 1rem;
+     box-shadow: var(--shadow-header);
+   }
+   
+   .nav-left {
+     display: flex;
+     align-items: center;
+     gap: 0.5rem;
+     justify-content: flex-start;
+   }
+   
+   .nav-right {
+     display: flex;
+     align-items: center;
+     gap: 0.75rem;
+     justify-content: flex-end;
+     margin-left: auto;
+   }
+   
+   .nav-link,
+   .brand {
+     color: var(--nav-link);
+     text-decoration: none;
+   }
+   
+   .nav-link:hover,
+   .nav-link:focus-visible {
+     color: var(--nav-link-active);
+     text-decoration: none;
+   }
+   
+   .nav-link.active {
+     color: var(--nav-link-active);
+     font-weight: 600;
+   }
+   
+   .brand {
+     font-weight: 800;
+     letter-spacing: 0.2px;
+   }
+   
+   .nav-logo {
+     height: 36px;
+     width: auto;
+     max-width: 140px;
+     object-fit: contain;
+     display: block;
+   }
+   
+   /* Sidebar toggle button (icon-only) */
+   .sidebar-toggle {
+     display: inline-flex;
+     align-items: center;
+     justify-content: center;
+     width: 38px;
+     height: 38px;
+     border-radius: 8px;
+     border: 1px solid transparent;
+     background: transparent;
+     color: var(--nav-link);
+     cursor: pointer;
+     transition: background 0.15s ease, transform 0.15s ease;
+   }
+   .sidebar-toggle:hover { background: var(--nav-bg-hover); }
+   .sidebar-toggle:active { transform: scale(0.98); }
+   .sidebar-toggle .bar {
+     display: block;
+     width: 18px;
+     height: 2px;
+     background: currentColor;
+     margin: 3px 0;
+     border-radius: 2px;
+   }
+   
+   /* ================= Sidebar / Main Layout ================= */
+   .app-layout {
+     display: grid;
+     grid-template-columns: 260px 1fr;
+     gap: 0;
+   }
+   
+   .app-sidebar {
+     position: sticky;
+     top: 0;
+     align-self: start;
+     height: calc(100vh - 64px);
+     background: var(--sidebar-bg);
+     color: var(--sidebar-text);
+     border-right: 1px solid var(--border);
+     z-index: var(--z-sidebar);
+     display: flex;
+     flex-direction: column;
+     padding: 0.5rem 0;
+   }
+   
+   .sidebar-list { list-style: none; margin: 0; padding: 0; }
+   
+   .sidebar-link {
+     display: block;
+     padding: 0.75rem 1.25rem;
+     color: var(--sidebar-text);
+     border-left: 3px solid transparent;
+     transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+     text-decoration: none;
+   }
+   
+   .sidebar-link:hover {
+     background: var(--sidebar-hover-bg);
+     color: #FFFFFF;
+   }
+   
+   .sidebar-link.active {
+     background: var(--sidebar-active-bg);
+     border-left-color: var(--sidebar-active-border);
+     font-weight: 600;
+   }
+   
+   /* Sidebar focus enhancement */
+   .sidebar-link:focus-visible {
+     outline: none;
+     box-shadow: var(--focus-ring);
+     background-color: var(--sidebar-hover-bg);
+     border-left-color: var(--sidebar-active-border);
+     color: #FFFFFF;
+   }
+   
+   /* Accessible submenu animation */
+   .submenu {
+     overflow: hidden;
+     height: 0;
+     transition: height 0.28s ease;
+     will-change: height;
+   }
+   .submenu.collapsed { height: 0 !important; }
+   .submenu-toggle .icon { transition: transform 0.28s ease; }
+   .submenu-toggle.expanded .icon { transform: rotate(180deg); }
+   
+   /* ================= Main / Footer ================= */
+   .app-main-content {
+     background: var(--bg);
+     color: var(--text);
+     padding: 1.25rem 1.5rem;
+   }
+   
+   .container { max-width: 1200px; margin: 0 auto; }
+   
+   .site-footer {
+     background: var(--nav-bg);
+     color: var(--nav-text);
+     text-align: center;
+     padding: 0.9rem 1rem;
+     border-top: 1px solid var(--border);
+     font-size: 0.9rem;
+   }
+   
+   /* ================= Buttons ================= */
+   .btn {
+     display: inline-flex;
+     align-items: center;
+     justify-content: center;
+     gap: 0.45rem;
+     padding: 0.65rem 1.1rem;
+     font-size: 0.95rem;
+     font-weight: 600;
+     border-radius: 8px;
+     border: 1px solid transparent;
+     cursor: pointer;
+     transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.02s ease;
+   }
+   .btn:active { transform: translateY(0.5px); }
+   
+   .btn-primary {
+     background: var(--brand);
+     color: var(--text-on-brand);
+     border-color: transparent;
+   }
+   .btn-primary:hover {
+     background: var(--brand-accent);
+     color: var(--text-on-brand);
+   }
+   
+   .btn-outline {
+     background: transparent;
+     color: var(--text);
+     border-color: var(--border);
+   }
+   .btn-outline:hover {
+     background: var(--sidebar-hover-bg);
+     color: #FFFFFF;
+   }
+   
+   .btn-icon {
+     width: 36px;
+     height: 36px;
+     display: inline-flex;
+     align-items: center;
+     justify-content: center;
+     border-radius: 8px;
+     border: 1px solid var(--border);
+     background: var(--surface);
+   }
+   .btn-icon:hover { background: var(--sidebar-hover-bg); color: #FFFFFF; }
+   
+   /* ================= Forms / Tables ================= */
+   label {
+     display: block;
+     margin-bottom: 0.35rem;
+     font-weight: 500;
+     color: var(--text);
+   }
+   input, select, textarea {
+     width: 100%;
+     padding: 0.75rem 0.85rem;
+     background: var(--bg);
+     color: var(--text);
+     border: 1px solid var(--border);
+     border-radius: 8px;
+     transition: box-shadow 0.15s ease, border-color 0.15s ease;
+   }
+   input:focus, select:focus, textarea:focus {
+     border-color: var(--brand);
+     box-shadow: var(--focus-ring);
+   }
+   
+   table {
+     width: 100%;
+     border-collapse: collapse;
+     margin-top: 1.25rem;
+     background: var(--surface);
+     border: 1px solid var(--border);
+     border-radius: 8px;
+     overflow: hidden;
+   }
+   th, td {
+     padding: 0.9rem 1rem;
+     text-align: left;
+     border-bottom: 1px solid var(--border);
+   }
+   th {
+     background: var(--table-head-bg);
+     color: var(--text);
+     font-weight: 600;
+   }
+   tr:last-child td { border-bottom: none; }
+   
+   /* ================= Skip to Content (Accessibility) ================= */
+   .skip-link {
+     position: absolute;
+     left: -9999px;
+     top: 0;
+     background: #000;
+     color: #fff;
+     padding: 0.5rem 0.75rem;
+     z-index: 2000;
+     border-radius: 6px;
+   }
+   .skip-link:focus {
+     left: 0.75rem;
+     top: 0.75rem;
+     box-shadow: var(--focus-ring);
+   }
+   
+   /* ================= Mobile Sidebar + Motion Pref ================= */
+   @media (max-width: 1024px) {
+     .app-layout { grid-template-columns: 1fr; }
+   
+     .app-sidebar {
+       position: fixed;
+       top: 64px;
+       left: 0;
+       height: calc(100vh - 64px);
+       width: 280px;
+       transform: translateX(-100%);
+       transition: transform 0.28s ease;
+       box-shadow: 8px 0 18px rgba(0, 0, 0, 0.25);
+     }
+   
+     body.is-sidebar-open .app-sidebar { transform: translateX(0); }
+   
+     .sidebar-overlay {
+       content: "";
+       position: fixed;
+       inset: 64px 0 0 0;
+       background: rgba(0, 0, 0, 0.35);
+       opacity: 0;
+       pointer-events: none;
+       transition: opacity 0.2s ease;
+       z-index: var(--z-overlay);
+     }
+     body.is-sidebar-open .sidebar-overlay {
+       opacity: 1;
+       pointer-events: auto;
+     }
+   
+     .app-main-content { padding: 1rem; }
+   }
+   
+   @media (prefers-reduced-motion: reduce) {
+     *, *::before, *::after {
+       transition: none !important;
+       animation: none !important;
+     }
+     .app-sidebar, .submenu { transition: none !important; }
+   }
+   
+   /* ================= Utilities ================= */
+   .text-muted { color: var(--muted) !important; }
+   .hidden { display: none !important; }
+   .spacer { height: 1rem; }
+   
