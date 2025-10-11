@@ -4,23 +4,23 @@
 
 :root {
   /* Mapping for static files and non-dynamic elements */
-  --color-rich-black: #0D1B2A;
-  --color-orange: #F2A249;
-  --color-white: #FFFFFF;
-  --color-navy: #0E285C;
-  --color-muted-gray: #4F4F6E;
+  --color-olive-green: #61892F;
+  --color-lime-green: #86C232;
+  --color-deep-gray: #222629;
+  --color-medium-gray: #474B4F;
+  --color-light-gray: #6B6E70;
 
-  /* Theme Mapping (These should be defined in theme.css) */
-  --color-primary: var(--color-navy);        /* Dark Navy (Brand/Main interaction) */
-  --color-secondary: var(--color-orange);    /* Orange (Accent/Hover) */
-  --color-text-dark: var(--text);            /* CRITICAL: References dynamic --text */
-  --color-text-light: var(--muted);          /* References dynamic --muted */
-  --color-background: var(--bg);             /* References dynamic --bg */
-  --color-surface: var(--surface);           /* References dynamic --surface */
-  --color-border: #E5E7EB;                   /* Light Gray (General Border) */
+  /* Theme Mapping */
+  --color-primary: var(--brand);        
+  --color-secondary: var(--color-lime-green);    
+  --color-text-dark: var(--text);
+  --color-text-light: var(--muted);
+  --color-background: var(--bg);
+  --color-surface: var(--surface);
+  --color-border: #E5E7EB;
   
-  /* Status Colors (Kept static for predictability) */
-  --color-success: #43A047;
+  /* Status Colors */
+  --color-success: var(--color-olive-green);
   --color-error: #E53935;   
   
   /* Typography */
@@ -70,8 +70,7 @@ body {
 
 /* Headings */
 h1, h2, h3, h4, h5, h6 {
-  /* CRITICAL: Now correctly inherits dynamic text color from --text via --color-text-dark */
-  color: var(--color-text-dark); 
+  color: var(--text); 
   line-height: 1.2;
   margin-bottom: calc(var(--spacing-unit) * 3);
   font-weight: var(--font-weight-bold);
@@ -124,7 +123,6 @@ a:hover {
 .app-sidebar {
   width: 250px; 
   flex-shrink: 0;
-  /* CRITICAL FIX: Now correctly uses the dynamic --surface variable */
   background-color: var(--surface); 
   border-right: 1px solid var(--color-border);
   padding: calc(var(--spacing-unit) * 2) 0;
@@ -167,14 +165,13 @@ a:hover {
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: center;
-  text-decoration: none;
-  color: var(--color-white); 
+  color: var(--brand-contrast); 
 }
 
 /* Primary Button Style */
 .btn-primary {
-  background-color: var(--color-primary);
-  color: var(--color-white);
+  background-color: var(--brand);
+  color: var(--brand-contrast);
   box-shadow: var(--shadow-subtle);
   padding: calc(var(--spacing-unit) * .55) calc(var(--spacing-unit) * 1);
   border-radius: var(--radius-small);
@@ -183,7 +180,7 @@ a:hover {
 
 .btn-primary:hover {
   background-color: var(--color-secondary);
-  color: var(--color-text-dark);
+  color: var(--text);
   box-shadow: none;
 }
 
@@ -206,8 +203,8 @@ button {
   padding: calc(var(--spacing-unit) * 1.5);
   width: 100%;
   cursor: pointer;
-  background-color: var(--color-primary);
-  color: var(--color-white);
+  background-color: var(--brand);
+  color: var(--brand-contrast);
   border: none;
   border-radius: var(--radius-small);
   font-weight: var(--font-weight-medium);
@@ -216,7 +213,7 @@ button {
 
 button:hover {
   background-color: var(--color-secondary);
-  color: var(--color-text-dark);
+  color: var(--text);
 }
 
 .btn-icon {
@@ -291,7 +288,7 @@ padding:.35rem .6rem; border-radius: 999px;
 .sidebar-link {
   display: block;
   padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 3);
-  color: var(--color-text-dark); 
+  color: var(--text); 
   font-weight: var(--font-weight-regular);
   text-decoration: none;
   transition: background-color 0.15s ease, color 0.15s ease;
@@ -305,7 +302,7 @@ padding:.35rem .6rem; border-radius: 999px;
 
 .sidebar-link.active {
   background-color: var(--color-primary);
-  color: var(--color-white);
+  color: var(--color-white); 
   font-weight: var(--font-weight-medium);
   border-left: 3px solid var(--color-secondary);
   padding-left: calc(var(--spacing-unit) * 3 - 3px);
@@ -359,7 +356,7 @@ form {
   padding: calc(var(--spacing-unit) * 4);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-medium);
-  background-color: var(--surface); /* Uses dynamic surface */
+  background-color: var(--surface); 
   box-shadow: none;
 }
 
@@ -372,7 +369,7 @@ label {
   display: block;
   margin-bottom: calc(var(--spacing-unit) * 0.5);
   font-weight: var(--font-weight-medium);
-  color: var(--color-text-dark); 
+  color: var(--text); 
 }
 
 input[type="text"],
@@ -387,8 +384,8 @@ select,
   border-radius: var(--radius-small);
   font-family: var(--font-family-sans);
   font-size: 1rem;
-  color: var(--color-text-dark);
-  background-color: var(--surface); /* Uses dynamic surface */
+  color: var(--text);
+  background-color: var(--surface); 
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   margin-top: calc(var(--spacing-unit) * 0.25);
 }
@@ -410,7 +407,7 @@ table {
   border-collapse: collapse;
   border-spacing: 0;
   margin-top: calc(var(--spacing-unit) * 3);
-  background-color: var(--surface); /* Uses dynamic surface */
+  background-color: var(--surface); 
   border: 1px solid var(--color-border);
   border-radius: var(--radius-medium);
   box-shadow: none;
@@ -429,7 +426,7 @@ th:last-child, td:last-child {
 
 th {
   background-color: var(--table-head-bg);
-  color: var(--color-text-dark);
+  color: var(--text);
   font-weight: var(--font-weight-medium);
 }
 
@@ -475,7 +472,7 @@ tr:last-child td {
   border: 1px solid transparent; 
 }
 
-/* Update flash message colors for better contrast on Light Background */
+/* Update flash message colors */
 .flash-messages.success {
 background-color: #D4EDDA;
 color: var(--color-success);
@@ -505,7 +502,7 @@ border-color: var(--color-primary);
   padding: calc(var(--spacing-unit) * 4);
   border-radius: var(--radius-medium);
   max-width: 400px;
-  background-color: var(--surface); /* Uses dynamic surface */
+  background-color: var(--surface); 
   box-shadow: none;
 }
 
@@ -521,8 +518,8 @@ border-radius: var(--radius-small);
 /* ----------------------------------------------------------------------- */
 
 .site-footer {
-background-color: var(--nav-bg); /* Uses dynamic nav background */
-color: var(--nav-text); /* Uses dynamic nav text color */
+background-color: var(--nav-bg); 
+color: var(--nav-text); 
 text-align: center;
 padding: calc(var(--spacing-unit) * 3) 0;
 margin-top: 0; 
