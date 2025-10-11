@@ -1,86 +1,107 @@
-/* =========================
-   Base Theme Variables (LIGHT MODE: High Contrast)
-   ========================= */
-   :root {
-    /* New Palette Mapping */
-    --color-olive-green: #61892F;
-    --color-lime-green: #86C232;
-    --color-deep-gray: #222629;
-    --color-medium-gray: #474B4F;
-    --color-light-gray: #FEFFFF; /* UPDATED to pure white for dark mode text */
-    --color-pure-white: #FEFFFF; /* Ensuring a consistent white variable */
+/* =========================================================
+   Triple T's Rewards – THEME TOKENS
+   Light mode by default. Dark mode via [data-theme="dark"].
+   Palette: #61892F, #86C232, #222629, #474B4F, #6B6E70
+   ========================================================= */
 
-    /* CORE THEME COLORS (Dynamic Base) */
-    --bg: var(--color-pure-white);      
-    --text: var(--color-deep-gray);     
-    --muted: var(--color-medium-gray); 
-    --surface: var(--color-pure-white); 
-    --border: #E5E7EB; 
+/* ---- Base (LIGHT) ---- */
+:root {
+  /* Brand palette */
+  --color-olive-green: #61892F;  /* Primary */
+  --color-lime-green:  #86C232;  /* Accent / CTA */
+  --color-deep-gray:   #222629;  /* Dark BG */
+  --color-medium-gray: #474B4F;  /* Panels / Header / Sidebar */
+  --color-light-gray:  #6B6E70;  /* Muted text */
+  --color-white:       #FFFFFF;
 
-    /* CRITICAL ADDITION: Mapping old static vars to dynamic ones */
-    --color-text-dark: var(--text);
-    --color-text-light: var(--muted);
+  /* Semantic tokens (LIGHT) */
+  --bg: var(--color-white);
+  --text: #222629;                /* Slightly darker than medium-gray for legibility */
+  --muted: var(--color-light-gray);
+  --surface: #F5F6F7;             /* Light card/side surface */
+  --border: #E5E7EB;              /* Neutral border */
 
-    --brand: var(--color-olive-green);  
-    --brand-contrast: var(--color-pure-white); 
-    
-    /* DYNAMIC NAVIGATION/FOOTER COLORS (Set to LIGHT mode defaults) */
-    --nav-bg: var(--color-medium-gray);  
-    --nav-link: var(--color-pure-white); 
-    --nav-link-active: var(--color-lime-green); 
-    --nav-text: var(--color-pure-white); 
+  --brand: var(--color-olive-green);
+  --brand-accent: var(--color-lime-green);
+  --brand-contrast: #FEFFFF;
 
-    --table-head-bg: #F0F0F0; 
-    --chip-bg: #E3F4F4;
-    
-    /* Dynamic utility/hover colors */
-    --nav-bg-hover: var(--color-olive-green);
-    --active-bg: rgba(134, 194, 50, 0.25); 
-    --chip-border: rgba(34, 38, 41, 0.35);
+  /* Navigation / Header / Footer */
+  --nav-bg: var(--color-medium-gray);
+  --nav-text: #ECEFF1;
+  --nav-link: #ECEFF1;
+  --nav-link-active: var(--brand-accent);
+  --nav-bg-hover: #585C60;        /* Slightly lighter than medium-gray */
 
-    --badge-success: var(--color-olive-green); 
-    --badge-fail: #D32F2F;    
-    --badge-logout: var(--color-lime-green);  
+  /* Sidebar */
+  --sidebar-bg: var(--color-medium-gray);
+  --sidebar-text: #E7EAED;
+  --sidebar-hover-bg: rgba(97,137,47,0.22);  /* olive, translucent */
+  --sidebar-active-bg: rgba(134,194,50,0.24);/* lime, translucent */
+  --sidebar-active-border: var(--brand-accent);
+
+  /* Tables / Chips / Badges */
+  --table-head-bg: #F0F2F4;
+  --chip-bg: #EAEFF1;
+  --chip-border: rgba(0,0,0,0.08);
+
+  /* Status */
+  --success: var(--color-olive-green);
+  --warning: #FFA726;
+  --error:   #E53935;
+
+  /* Shadows */
+  --shadow-header: 0 2px 4px rgba(0,0,0,0.18);
+  --shadow-raised: 0 6px 16px rgba(0,0,0,0.06);
+
+  /* Focus ring */
+  --focus-ring: 0 0 0 3px rgba(134, 194, 50, 0.45);
+
+  /* Z-index scale */
+  --z-header: 1000;
+  --z-sidebar: 900;
+  --z-overlay: 1100;
 }
 
-/* =========================
-   Dark Mode Overrides (Theme Toggle Activation)
-   ========================= */
+/* ---- Dark Mode ---- */
 [data-theme="dark"] {
-    /* CORE THEME COLOR OVERRIDES */
-    --bg: var(--color-deep-gray);    
-    --text: var(--color-light-gray);      /* CRITICAL: Now resolves to #FEFFFF */
-    --muted: var(--color-light-gray);     /* Muted text also uses #FEFFFF for high contrast */
-    --surface: var(--color-medium-gray); 
-    --border: var(--color-olive-green);     
-    
-    --brand: var(--color-lime-green);    
-    --brand-contrast: var(--color-deep-gray); 
-    
-    /* CRITICAL ADDITION: Mapping old static vars to dynamic ones */
-    --color-text-dark: var(--text);
-    --color-text-light: var(--muted);
+  --bg: var(--color-deep-gray);
+  --text: #E6E8EA;
+  --muted: #BEC3C6;
 
-    /* DYNAMIC NAVIGATION/FOOTER COLOR OVERRIDES */
-    --nav-bg: var(--color-deep-gray); 
-    --nav-link: var(--color-light-gray); /* Links now use pure white */
-    --nav-link-active: var(--color-lime-green); 
-    --nav-text: var(--color-light-gray); 
-    
-    --table-head-bg: var(--color-deep-gray);
-    --chip-bg: var(--color-medium-gray);      
-    
-    --nav-bg-hover: var(--color-olive-green);
-    --active-bg: rgba(134, 194, 50, 0.5);
-    --chip-border: rgba(97, 137, 47, 0.6);
+  --surface: #2B2F33;             /* Slightly lighter than deep gray for layering */
+  --border: #3A3F43;
 
-    --badge-success: var(--color-olive-green);
-    --badge-fail: #D32F2F;
-    --badge-logout: var(--color-lime-green);
+  --brand: var(--color-lime-green);
+  --brand-accent: var(--color-olive-green);
+  --brand-contrast: var(--color-deep-gray);
+
+  --nav-bg: var(--color-deep-gray);
+  --nav-text: #DCE0E2;
+  --nav-link: #DCE0E2;
+  --nav-link-active: var(--color-lime-green);
+  --nav-bg-hover: #31363A;
+
+  --sidebar-bg: #2A2E32;
+  --sidebar-text: #E6E8EA;
+  --sidebar-hover-bg: rgba(134,194,50,0.16);
+  --sidebar-active-bg: rgba(134,194,50,0.28);
+  --sidebar-active-border: var(--color-lime-green);
+
+  --table-head-bg: #2D3136;
+  --chip-bg: #32373C;
+  --chip-border: rgba(255,255,255,0.08);
+
+  --success: var(--color-olive-green);
+  --warning: #FFB84D;
+  --error:   #EF5350;
+
+  --shadow-header: 0 2px 6px rgba(0,0,0,0.5);
+  --shadow-raised: 0 10px 24px rgba(0,0,0,0.35);
+
+  --focus-ring: 0 0 0 3px rgba(97, 137, 47, 0.55);
 }
-/* =========================
-   Shared Components
-   ========================= */
+
+/* ---- Shared Base Styles (optional but handy here) ---- */
 html, body {
   background: var(--bg);
   color: var(--text);
@@ -88,51 +109,4 @@ html, body {
   padding: 0;
 }
 
-.muted {
-  color: var(--muted);
-}
-
-.site-nav {
-  /* This style will dynamically change based on the 'data-theme' attribute */
-  background: var(--nav-bg);
-  padding: .5rem 1rem;
-  display: flex;
-  align-items: center;
-}
-.site-nav .nav-link, .site-nav .brand {
-  /* This style will dynamically change based on the 'data-theme' attribute */
-  color: var(--nav-link);
-  text-decoration: none;
-  margin-right: 1rem;
-}
-.site-nav .nav-link.active {
-  color: var(--nav-link-active);
-  font-weight: bold;
-}
-
-footer.site-footer {
-  /* This style will dynamically change based on the 'data-theme' attribute */
-  background: var(--nav-bg); 
-  color: var(--nav-link); /* Uses nav-link color for footer text */
-  padding: 1rem;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--surface);
-}
-th, td {
-  border: 1px solid var(--border);
-  padding: .5rem;
-}
-th {
-  background: var(--table-head-bg);
-}
-
-.btn {
-  background: var(--brand);
-  border: none;
-}
+.muted { color: var(--muted); }

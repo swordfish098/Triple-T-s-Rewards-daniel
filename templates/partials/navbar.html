@@ -46,7 +46,7 @@
         <span id="notification-count"></span>
       </span>
       <span class="user-chip">Hi, {{ current_user.USERNAME }}</span>
-      <a class="btn-outline" href="{{ url_for('auth.logout') }}">Logout</a>
+      <a href="{{ url_for('auth.logout') }}">Logout</a>
     {% else %}
       <a class="btn-primary" href="{{ url_for('auth.login') }}">Login</a>
     {% endif %}
