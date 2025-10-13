@@ -13,6 +13,9 @@ import string
 # Blueprint for sponsor-related routes
 sponsor_bp = Blueprint('sponsor_bp', __name__, template_folder="../templates")
 
+def driver_query_for_sponsor(sponsor_id):
+    return db.session.query(User).filter(User.USER_TYPE == Role.DRIVER, User.SPONSOR_ID == sponsor_id).all()
+
 def next_user_code():
     last_user = User.query.order_by(User.USER_CODE.desc()).first()
     return (last_user.USER_CODE + 1) if last_user else 1
@@ -105,7 +108,9 @@ def dashboard():
         db.session.add(settings)
         db.session.commit()
     drivers = User.query.filter_by(USER_TYPE=Role.DRIVER).all()
-    return render_template('sponsor/dashboard.html', settings=settings, drivers=drivers)
+    avg_points = db.session.query(db.func.avg(User.POINTS)).filter(User.USER_TYPE == Role.DRIVER).scalar() or 0
+    total_points = db.session.query(db.func.sum(User.POINTS)).filter(User.USER_TYPE == Role.DRIVER).scalar() or 0
+    return render_template('sponsor/dashboard.html', settings=settings, drivers=drivers, avg_points=avg_points, total_points=total_points)
 
 # Update Store Settings
 @sponsor_bp.route('/update_settings', methods=['POST'])
