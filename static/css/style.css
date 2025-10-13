@@ -535,4 +535,176 @@
   color: var(--brand-accent);
 }
 
+/* =========================================================
+   THEMED CHECKBOXES (Centered + Larger Checkmark)
+   ========================================================= */
+   input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    background-color: var(--bg);
+    cursor: pointer;
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+    transition: all 0.2s ease;
+  }
+  
+  /* Checked state */
+  input[type="checkbox"]:checked {
+    background-color: var(--brand);
+    border-color: var(--brand-accent);
+  }
+  
+  /* Bigger, centered checkmark */
+  input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 6px;
+    height: 12px;
+    border-right: 3px solid var(--text-on-brand);
+    border-bottom: 3px solid var(--text-on-brand);
+    transform: translate(-50%, -60%) rotate(45deg);
+    transform-origin: center;
+  }
+  
+  /* Hover + focus ring */
+  input[type="checkbox"]:hover {
+    border-color: var(--brand-accent);
+  }
+  
+  input[type="checkbox"]:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(134, 194, 50, 0.35);
+  }
+  
+  /* Label alignment */
+  .form-group-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+    color: var(--text);
+    font-weight: 500;
+  }
+  
+  /* =========================================================
+   Apply to Sponsor Page Styles
+   ========================================================= */
+.apply-form {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+/* Headline */
+.apply-form h2 {
+  text-align: left;
+  margin-bottom: 1.5rem;
+  color: var(--text);
+  font-weight: 600;
+  display: inline-block;
+  padding-bottom: 0.35rem;
+}
+
+
+/* Flash messages */
+.flashes {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 1rem;
+}
+.flashes li {
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  border-radius: 8px;
+  font-weight: 500;
+}
+.flashes li.success {
+  background: rgba(134, 194, 50, 0.1);
+  border-left: 4px solid var(--brand);
+  color: var(--brand);
+}
+.flashes li.danger, .flashes li.error {
+  background: rgba(255, 50, 50, 0.08);
+  border-left: 4px solid #ff4a4a;
+  color: #ff8080;
+}
+
+/* Form groups */
+.apply-form label {
+  font-weight: 600;
+  color: var(--text);
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.apply-form select,
+.apply-form textarea {
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.apply-form select:focus,
+.apply-form textarea:focus {
+  outline: none;
+  border-color: var(--brand-accent);
+  box-shadow: 0 0 0 3px rgba(134,194,50,0.35);
+}
+
+/* Submit + Cancel buttons */
+.apply-form .form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.apply-form button[type="submit"] {
+  background: var(--brand);
+  color: var(--text-on-brand);
+  border: none;
+  padding: 0.7rem 1.3rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.apply-form button[type="submit"]:hover {
+  background: var(--brand-accent);
+}
+
+.apply-form button[type="submit"]:active {
+  transform: translateY(1px);
+}
+
+.apply-form a {
+  color: var(--brand-accent);
+  text-decoration: none;
+  align-self: center;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+.apply-form a:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
 
