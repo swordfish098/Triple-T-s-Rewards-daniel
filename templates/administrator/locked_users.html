@@ -1,83 +1,102 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Locked Users</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-  </style>
-</head>
-<body class="bg-gray-100 flex justify-center min-h-screen p-8">
-  <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
-    
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="mb-4">
-          {% for category, message in messages %}
-            <div class="p-3 rounded-md text-white 
-              {% if category == 'success' %} bg-green-600 
-              {% elif category == 'danger' %} bg-red-600 
-              {% elif category == 'info' %} bg-blue-600 
-              {% else %} bg-gray-600 {% endif %}">
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
+{% extends "base.html" %}
 
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
-      <a href="{{ url_for('administrator_bp.dashboard') }}" 
-         class="flex items-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-        <i class="fa-solid fa-arrow-left mr-2"></i> Back
-      </a>
-      <h2 class="text-3xl font-bold text-gray-800 text-center flex-1">Locked Users</h2>
-      <form action="{{ url_for('administrator_bp.unlock_all') }}" method="POST">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" 
-                class="flex items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-          <i class="fa-solid fa-unlock-alt mr-2"></i> Unlock All
-        </button>
-      </form>
-    </div>
+{% block title %}Locked Users - TTT Rewards{% endblock %}
 
-    <!-- User List -->
-    {% if locked_users %}
-    <ul class="divide-y divide-gray-200">
-      {% for user in locked_users %}
-      <li class="py-4 flex items-center justify-between">
-        <div>
-          <p class="text-lg font-medium text-gray-900">{{ user.USERNAME }}</p>
-          <p class="text-sm text-gray-500">
-            Locked since: {{ user.LOCKOUT_TIME.strftime('%Y-%m-%d %H:%M:%S') }}
-          </p>
-        </div>
-        <form action="{{ url_for('administrator_bp.unlock', user_id=user.USER_CODE) }}" method="POST">
+{% block styles %}
+  {{ super() }} {# Ensure theme.css + style.css are included #}
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <div class="card">
+
+      {# Flash messages using your alert styles #}
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-messages">
+            {% for category, message in messages %}
+              {% if category == 'success' %}
+                <div class="alert success" role="alert">{{ message }}</div>
+              {% elif category == 'danger' %}
+                <div class="alert error" role="alert">{{ message }}</div>
+              {% elif category == 'warning' %}
+                <div class="alert warning" role="alert">{{ message }}</div>
+              {% else %}
+                <div class="alert" role="status">{{ message }}</div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <div style="display:flex; align-items:center; gap:.75rem; margin-bottom:1rem;">
+        <a href="{{ url_for('administrator_bp.dashboard') }}" class="btn btn-outline" aria-label="Back to Administrator Dashboard">
+          ← Back
+        </a>
+        <h1 style="margin:0;">Locked Users</h1>
+        <div style="flex:1;"></div>
+
+        {# Unlock All (risky bulk action -> danger/warning styling) #}
+        <form action="{{ url_for('administrator_bp.unlock_all') }}" method="POST"
+              onsubmit="return confirm('WARNING: Unlock ALL users? This will remove lockout for every locked account.');"
+              style="margin:0;">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button type="submit" 
-                  class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-            Unlock
+          <button type="submit"
+                  class="btn btn-danger"
+                  aria-label="Unlock all locked users">
+            Unlock All
           </button>
         </form>
-      </li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    <div class="flex justify-center items-center py-10">
-      <div class="text-center text-gray-500">
-        <i class="fa-solid fa-check-circle text-4xl mb-2 text-green-500"></i>
-        <p>No users are currently locked out.</p>
       </div>
+
+      {% if locked_users %}
+        <table aria-describedby="locked-users-caption">
+          <caption id="locked-users-caption" class="text-muted" style="text-align:left; padding:.5rem 0;">
+            Users currently locked out
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Username</th>
+              <th scope="col">Locked Since</th>
+              <th scope="col" style="width: 140px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for user in locked_users %}
+            <tr>
+              <td>
+                <div><strong>{{ user.USERNAME }}</strong></div>
+                <div class="text-muted" style="font-size:.9rem;">
+                  {{ user.FNAME }} {{ user.LNAME }} · {{ user.EMAIL }}
+                </div>
+              </td>
+              <td>{{ user.LOCKOUT_TIME.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+              <td>
+                <form action="{{ url_for('administrator_bp.unlock', user_id=user.USER_CODE) }}"
+                      method="POST"
+                      onsubmit="return confirm('Unlock {{ user.USERNAME }}?');"
+                      style="display:inline-block; margin:0;">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit"
+                          class="btn btn-success"
+                          aria-label="Unlock user {{ user.USERNAME }}">
+                    Unlock
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="box" role="status">
+          <p class="text-muted" style="margin:0;">No users are currently locked out.</p>
+        </div>
+      {% endif %}
     </div>
-    {% endif %}
   </div>
-</body>
-</html>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+{% endblock %}

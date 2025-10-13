@@ -32,7 +32,7 @@
                             <form method="POST" action="{{ url_for('sponsor_bp.award_points', driver_id=driver.USER_CODE) }}" style="display: flex; gap: 0.5rem;">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <input type="number" name="points" min="1" placeholder="Points" style="width: 100px;" required>
-                                <button type="submit" style="width: auto; padding: 0.4rem 0.8rem;">Award</button>
+                                <button type="submit" class="btn">Award</button>
                             </form>
                         </td>
                         <td>
@@ -40,7 +40,7 @@
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <input type="number" name="points" min="1" placeholder="Points" style="width: 100px;" required>
                                 <input type="text" name="reason" placeholder="Reason" style="width: 150px;" required>
-                                <button type="submit" style="width: auto; padding: 0.4rem 0.8rem;">Remove</button>
+                                <button type="submit" class="btn">Remove</button>
                             </form>
                         </td>
                     </tr>
@@ -76,7 +76,7 @@
         <input type="text" id="ebay_category_id" name="ebay_category_id" value="{{ settings.ebay_category_id }}" required>
         <label for="point_ratio">Points per Dollar:</label>
         <input type="number" id="point_ratio" name="point_ratio" value="{{ settings.point_ratio }}" required>
-        <button type="submit">Save Changes</button>
+        <button type="submit" class="btn">Save Changes</button>
     </form>
 
     <p><a href="{{ url_for('sponsor_bp.create_sponsor_user') }}">Create Sponsor Account</a></p>

@@ -5,7 +5,7 @@
 {% block content %}
   <h1>My Settings</h1>
   
-  <div class="form-container">
+  <div>
     <form method="POST">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       
@@ -31,7 +31,7 @@
         </label>
       </div>
       
-      <button type="submit" class="btn-primary">Save Settings</button>
+      <button type="submit" class="btn">Save Settings</button>
     </form>
   </div>
 {% endblock %}

@@ -2,19 +2,10 @@
   <div class="nav-left">
 
     <a class="nav-link {{ 'active' if request.endpoint == 'common.index' else '' }}"
-       href="{{ url_for('common.index') }}">Home</a>
+       href="{{ url_for('common.index') }}">
+      <img src="{{ url_for('static', filename='ttt_logo.png') }}" alt="Triple T's Rewards" class="nav-logo">
+    </a>
 
-    <a class="nav-link {{ 'active' if request.endpoint == 'driver_bp.dashboard' else '' }}"
-       href="{{ url_for('driver_bp.dashboard') }}">Driver Dashboard</a>
-
-    <a class="nav-link {{ 'active' if request.endpoint == 'sponsor_bp.dashboard' else '' }}"
-       href="{{ url_for('sponsor_bp.dashboard') }}">Sponsor Dashboard</a>
-
-    <a class="nav-link"
-       href="{{ url_for('rewards_bp.store') }}">Truck Rewards Store</a>
-
-    <a class="nav-link {{ 'active' if request.endpoint == 'about_bp.view_about' else '' }}"
-       href="{{ url_for('about_bp.view_about') }}">About</a>
     <a class="nav-link {{ 'active' if request.endpoint == 'notification_bp.send_message' else '' }}"
        href="{{ url_for('notification_bp.send_message') }}">Send Message</a>
   </div>
@@ -48,25 +39,17 @@
       <a href="{{ url_for('rewards_bp.view_wishlist') }}" class="nav-link">
         Wishlist
       </a>
-      <span id="notification-bell-container" style="position: relative; margin-left: 10px; display: inline-block;">
-        <a href="{{ url_for('notification_bp.notifications') }}" style="text-decoration: none; font-size: 1.5em; vertical-align: middle;">
+      <span id="notification-bell-container">
+        <a href="{{ url_for('notification_bp.notifications') }}">
           🔔
         </a>
-        <span id="notification-count" 
-              style="position: absolute; top: -8px; right: -12px; 
-                     background-color: red; color: white; border-radius: 50%; 
-                     padding: 2px 6px; font-size: 0.7em; 
-                     line-height: 1; /* Ensures text is centered */
-                     display: none; /* Hidden by default */
-                     min-width: 10px; /* Ensures bubble holds one digit */
-                     text-align: center;">
-        </span>
+        <span id="notification-count"></span>
       </span>
       <span class="user-chip">Hi, {{ current_user.USERNAME }}</span>
-      <a class="btn-outline" href="{{ url_for('auth.logout') }}">Logout</a>
+      <a href="{{ url_for('auth.logout') }}">Logout</a>
     {% else %}
       <a class="btn-primary" href="{{ url_for('auth.login') }}">Login</a>
     {% endif %}
   </div>
 </nav>
-<!-- templates/partials/navbar.html  (new file) -->
+

@@ -1,20 +1,15 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8"><title>About</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-  </head>
-  <body class="page">
-    <p><a href="/">Back</a>
-      {% if current_user.is_authenticated %}
-        Logged in as {{ current_user.USERNAME }}
-        (<a href="{{ url_for('auth.logout') }}">Logout</a>)
-      {% else %}
-        <a href="{{ url_for('auth.login') }}">Login</a>
-      {% endif %}
-      {% if current_user.is_authenticated and current_user.USER_TYPE == 'administrator' %}
-        | <a href="{{ url_for('about_bp.edit_about') }}">Edit About</a>
-      {% endif %}
+{% extends "base.html" %}  {# <-- 1. Specify the base template #}
+
+{% block title %}About TTT Rewards{% endblock %}
+
+{% block content %}  {# <-- 2. Wrap your unique content in the 'content' block #}
+  
+    {# You no longer need to include the navbar/footer here, as the base template handles it #}
+    {# The base template also handles current_user.is_authenticated check for navbar/scripts #}
+
+    {% if current_user.is_authenticated and current_user.USER_TYPE == 'administrator' %}
+      <a href="{{ url_for('about_bp.edit_about') }}">Edit About</a>
+    {% endif %}
     </p>
 
     <h2>About TTT Rewards</h2>
@@ -30,11 +25,14 @@
       <li>Product Description: {{ about_info.product_desc or 'N/A' }}</li>
     </ul>
 
+    {# The base template usually handles flash messages inside the main content block, 
+       but if you need them here specifically, keep them: #}
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, message in messages %}
         <div class="flash-messages {{ category }}">{{ message }}</div>
       {% endfor %}
     {% endwith %}
-  </body>
-</html>
 
+{% endblock %}
+
+{# 3. You don't need a scripts block unless you have *extra* scripts specific to the about page #}
