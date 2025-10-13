@@ -25,3 +25,4 @@ migrations/
 # Node
 node_modules/
 .env
+.env
