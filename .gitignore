@@ -1,5 +1,5 @@
 # Python
-__pycache__
+__pycache__/
 *.pyc
 *.pyo
 *.pyd
@@ -7,8 +7,12 @@ __pycache__
 *.sqlite3
 
 # Virtual environments
+.env
+.env.*
+__pycache__/
+*.pyc
 venv/
-.env/
+
 
 # Flask / migrations (if you don’t want generated migration files committed)
 migrations/
@@ -20,9 +24,4 @@ migrations/
 
 # Node
 node_modules/
-.env
-.env.*
-__pycache__/
-venv/
-*.pyc
 .env
