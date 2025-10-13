@@ -26,3 +26,4 @@ migrations/
 node_modules/
 .env
 .env
+.env
