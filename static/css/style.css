@@ -148,7 +148,36 @@
      margin: 3px 0;
      border-radius: 2px;
    }
-   
+
+   .page-header {
+      grid-column: 1 / -1;             /* spans both sidebar and main content columns */
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      position: relative;
+      z-index: 2;                      /* keep it above content if needed */
+    }
+    
+    .page-header h1 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    
+    .page-header h1::after {
+      content: "";
+      display: block;
+      width: 80px;
+      height: 3px;
+      margin-top: 0.35rem;
+      background-color: var(--brand-accent);
+    }
    /* ================= Sidebar / Main Layout ================= */
    .app-layout {
      display: grid;
@@ -230,53 +259,90 @@
      font-size: 0.9rem;
    }
    
-   /* ================= Buttons ================= */
-   .btn {
-     display: inline-flex;
-     align-items: center;
-     justify-content: center;
-     gap: 0.45rem;
-     padding: 0.65rem 1.1rem;
-     font-size: 0.95rem;
-     font-weight: 600;
-     border-radius: 8px;
-     border: 1px solid transparent;
-     cursor: pointer;
-     transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.02s ease;
-   }
-   .btn:active { transform: translateY(0.5px); }
-   
-   .btn-primary {
-     background: var(--brand);
-     color: var(--text-on-brand);
-     border-color: transparent;
-   }
-   .btn-primary:hover {
-     background: var(--brand-accent);
-     color: var(--text-on-brand);
-   }
-   
-   .btn-outline {
-     background: transparent;
-     color: var(--text);
-     border-color: var(--border);
-   }
-   .btn-outline:hover {
-     background: var(--sidebar-hover-bg);
-     color: #FFFFFF;
-   }
-   
-   .btn-icon {
-     width: 36px;
-     height: 36px;
-     display: inline-flex;
-     align-items: center;
-     justify-content: center;
-     border-radius: 8px;
-     border: 1px solid var(--border);
-     background: var(--surface);
-   }
-   .btn-icon:hover { background: var(--sidebar-hover-bg); color: #FFFFFF; }
+    /* ================= Buttons ================= */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      padding: 0.65rem 1.1rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.02s ease;
+    }
+    .btn:active { transform: translateY(0.5px); }
+  
+    .btn-primary {
+      background: var(--brand);
+      color: var(--text-on-brand);
+      border-color: transparent;
+    }
+    .btn-primary:hover {
+      background: var(--brand-accent);
+      color: var(--text-on-brand);
+    }
+  
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--border);
+    }
+    .btn-outline:hover {
+      background: var(--sidebar-hover-bg);
+      color: #FFFFFF;
+    }
+  
+    .btn-icon {
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .btn-icon:hover { background: var(--sidebar-hover-bg); color: #FFFFFF; }
+  
+    /* --- NEW: Minimal Glassy “Back” Button --- */
+    .btn-dash {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.55rem 1.05rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--brand);
+      background: rgba(134, 194, 50, 0.08);
+      
+      border-radius: 10px;
+      transition: all 0.25s ease;
+      box-shadow: 0 0 0 rgba(134, 194, 50, 0);
+    }
+  
+    .btn-dash:hover,
+    .btn-dash:focus-visible {
+      background: var(--brand);
+      color: var(--bg);
+      transform: translateY(-1px);
+      box-shadow: 0 0 8px rgba(134, 194, 50, 0.4);
+    }
+  
+    .btn-dash:active {
+      transform: translateY(0);
+      box-shadow: 0 0 4px rgba(134, 194, 50, 0.3);
+    }
+  
+    /* Optional icon alignment if you use a left arrow icon */
+    .btn-dash svg,
+    .btn-dash i {
+      font-size: 1rem;
+      line-height: 1;
+    }   
    
    /* ================= Forms / Tables ================= */
    label {
@@ -385,3 +451,53 @@
    .hidden { display: none !important; }
    .spacer { height: 1rem; }
    
+   /* ================= Sponsor Points ================= */
+  .data-section {
+    margin-top: 1rem;
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 0.9rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .data-table th {
+    background: var(--table-head-bg);
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .points-form {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .input-field.compact {
+    width: 120px;
+    padding: 0.5rem 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 768px) {
+    .points-form {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.4rem;
+    }
+    .input-field.compact {
+      width: 100%;
+    }
+  }
+

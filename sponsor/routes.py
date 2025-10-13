@@ -99,13 +99,7 @@ def list_sponsor_users():
 @sponsor_bp.route('/dashboard')
 @role_required(Role.SPONSOR, allow_admin=True)
 def dashboard():
-    settings = StoreSettings.query.first()
-    if not settings:
-        settings = StoreSettings()
-        db.session.add(settings)
-        db.session.commit()
-    drivers = User.query.filter_by(USER_TYPE=Role.DRIVER).all()
-    return render_template('sponsor/dashboard.html', settings=settings, drivers=drivers)
+    return render_template('sponsor/dashboard.html')
 
 # Update Store Settings
 @sponsor_bp.route('/update_settings', methods=['POST'])
@@ -121,58 +115,72 @@ def update_settings():
     flash("Store settings updated successfully!", "success")
     return redirect(url_for('sponsor_bp.dashboard'))
 
-# Award Points to a Driver
-@sponsor_bp.route('/award_points/<int:driver_id>', methods=['POST'])
+@sponsor_bp.route('/points', methods=['GET'])
 @role_required(Role.SPONSOR, allow_admin=True)
-def award_points(driver_id):
-    driver = User.query.get_or_404(driver_id)
-    points_to_add = request.form.get('points', type=int)
+def manage_points_page():
+    """Display all drivers for awarding or removing points."""
+    drivers = User.query.filter_by(USER_TYPE=Role.DRIVER).all()
+    return render_template('sponsor/points.html', drivers=drivers)
 
-    if driver and points_to_add is not None:
-        driver.POINTS += points_to_add
+
+@sponsor_bp.route('/points/<int:driver_id>', methods=['POST'])
+@role_required(Role.SPONSOR, allow_admin=True)
+def manage_points(driver_id):
+    """
+    Allows sponsors to award or remove points from a driver.
+    The form must include:
+      - 'action' = 'award' or 'remove'
+      - 'points' = integer value
+      - optional 'reason' (for removals)
+    """
+    driver = User.query.get_or_404(driver_id)
+    action = request.form.get('action')
+    points = request.form.get('points', type=int)
+    reason = request.form.get('reason', '').strip() or "No reason provided."
+
+    # Validate
+    if not action or action not in ("award", "remove") or points is None or points <= 0:
+        flash("Invalid request. Please provide an action (award/remove) and valid point amount.", "danger")
+        return redirect(url_for('sponsor_bp.manage_points_page'))
+
+    if action == "award":
+        driver.POINTS += points
         db.session.commit()
+
         log_audit_event(
             DRIVER_POINTS,
-            f"Sponsor {current_user.USERNAME} awarded {points_to_add} points to {driver.USERNAME}."
+            f"Sponsor {current_user.USERNAME} awarded {points} points to {driver.USERNAME}."
         )
-        if driver.wants_point_notifications:
+
+        if getattr(driver, "wants_point_notifications", False):
             Notification.create_notification(
                 recipient_code=driver.USER_CODE,
                 sender_code=current_user.USER_CODE,
-                message=f"You have been awarded {points_to_add} points by {current_user.USERNAME}."
+                message=f"You have been awarded {points} points by {current_user.USERNAME}."
             )
-        flash(f"Successfully awarded {points_to_add} points to {driver.USERNAME}.", "success")
-    else:
-        flash("Could not award points. Please try again.", "danger")
 
-    return redirect(url_for('sponsor_bp.dashboard'))
+        flash(f"✅ Successfully awarded {points} points to {driver.USERNAME}.", "success")
 
-# Remove Points from a Driver
-@sponsor_bp.route('/remove_points/<int:driver_id>', methods=['POST'])
-@role_required(Role.SPONSOR, allow_admin=True)
-def remove_points(driver_id):
-    driver = User.query.get_or_404(driver_id)
-    points_to_remove = request.form.get('points', type=int)
-    reason = request.form.get('reason', 'No reason provided.')
-
-    if driver and points_to_remove is not None:
-        driver.POINTS -= points_to_remove
+    elif action == "remove":
+        driver.POINTS -= points
         db.session.commit()
+
         log_audit_event(
             DRIVER_POINTS,
-            f"Sponsor {current_user.USERNAME} removed {points_to_remove} points from {driver.USERNAME}. Reason: {reason}"
+            f"Sponsor {current_user.USERNAME} removed {points} points from {driver.USERNAME}. Reason: {reason}"
         )
-        if driver.wants_point_notifications:
+
+        if getattr(driver, "wants_point_notifications", False):
             Notification.create_notification(
                 recipient_code=driver.USER_CODE,
                 sender_code=current_user.USER_CODE,
-                message=f"{points_to_remove} points have been removed from your account by {current_user.USERNAME}. Reason: {reason}"
+                message=f"{points} points were removed from your account by {current_user.USERNAME}. Reason: {reason}"
             )
-        flash(f"Successfully removed {points_to_remove} points from {driver.USERNAME}.", "success")
-    else:
-        flash("Could not remove points. Please try again.", "danger")
 
-    return redirect(url_for('sponsor_bp.dashboard'))
+        flash(f"⚠️ Removed {points} points from {driver.USERNAME}.", "info")
+
+    return redirect(url_for('sponsor_bp.manage_points_page'))
+
 
 # Add a New Driver
 @sponsor_bp.route('/add_user', methods=['GET', 'POST'])
@@ -225,6 +233,12 @@ def add_user():
         
     # Show the form to add a new driver
     return render_template('sponsor/add_user.html')
+
+@sponsor_bp.route('/drivers', methods=['GET'])
+@role_required(Role.SPONSOR, allow_admin=True)
+def driver_management():
+    drivers = User.query.filter_by(USER_TYPE=Role.DRIVER).all()
+    return render_template('sponsor/drivers.html', drivers=drivers)
 
 # Sponsor Application
 @sponsor_bp.route("/applications")

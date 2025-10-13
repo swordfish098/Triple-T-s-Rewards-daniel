@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
-  <h2>Administrator Dashboard (placeholder)</h2>
+  <div class="app-header-row">
+    <h1 style="margin:0;">Administrator Dashboard</h1>
+  </div>
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <ul class="flashes">
@@ -16,5 +18,4 @@
   <p><a href="{{ url_for('administrator_bp.audit_menu') }}">View Audit Logs</a></p>
   <p><a href="{{ url_for('administrator_bp.locked_users') }}">Unlock accounts</a></p>
   <a href="{{ url_for('auth.logout') }}">Logout</a>
-  <p><a href="/">Back</a></p>
 {% endblock %}
