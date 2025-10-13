@@ -501,3 +501,38 @@
     }
   }
 
+  /* ================= Points Summary ================= */
+.summary-section {
+  margin-bottom: 1.5rem;
+}
+
+.summary-card {
+  display: flex;
+  justify-content: flex-start;
+  gap: 2rem;
+  flex-wrap: wrap;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
+.summary-item {
+  flex: 1 1 220px;
+}
+
+.summary-item h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.4rem;
+}
+
+.summary-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--brand-accent);
+}
+
+
