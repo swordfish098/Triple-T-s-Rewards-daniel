@@ -4,6 +4,17 @@
   <meta charset="utf-8">
   <title>{% block title %}TTT Rewards{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>
+    // 1️⃣ Read saved theme, or follow system preference
+    (function() {
+      const saved = localStorage.getItem("theme");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const theme = saved || (prefersDark ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+      document.documentElement.style.backgroundColor = theme === "dark" ? "#222629" : "#ffffff";
+    })();
+  </script>
+  
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
   {% block styles %}{% endblock %}

@@ -105,18 +105,24 @@ def dashboard():
     return render_template('sponsor/dashboard.html')
 
 # Update Store Settings
-@sponsor_bp.route('/update_settings', methods=['POST'])
+@sponsor_bp.route('/settings', methods=['GET', 'POST'])
 @role_required(Role.SPONSOR, allow_admin=True)
 def update_settings():
     settings = StoreSettings.query.first()
     if not settings:
         settings = StoreSettings()
         db.session.add(settings)
-    settings.ebay_category_id = request.form.get('ebay_category_id')
-    settings.point_ratio = int(request.form.get('point_ratio'))
-    db.session.commit()
-    flash("Store settings updated successfully!", "success")
-    return redirect(url_for('sponsor_bp.dashboard'))
+        db.session.commit()
+
+    if request.method == 'POST':
+        settings.ebay_category_id = request.form.get('ebay_category_id')
+        settings.point_ratio = int(request.form.get('point_ratio'))
+        db.session.commit()
+        flash("Store settings updated successfully!", "success")
+        return redirect(url_for('sponsor_bp.update_settings'))
+
+    return render_template("sponsor/settings.html", settings=settings)
+
 
 @sponsor_bp.route('/points', methods=['GET'])
 @role_required(Role.SPONSOR, allow_admin=True)
