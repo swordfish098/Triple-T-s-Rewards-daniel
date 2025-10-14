@@ -708,3 +708,70 @@
   text-decoration: underline;
 }
 
+/* =========================================================
+   USER MENU DROPDOWN
+   ========================================================= */
+   .user-menu {
+    position: relative;
+  }
+  
+  .user-menu-toggle {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--nav-text);
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+  .user-menu-toggle:hover { color: var(--brand-accent); }
+  
+  .user-menu-dropdown {
+    position: absolute;
+    right: 0;
+    top: 120%;
+    min-width: 200px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    padding: 0.75rem 0;
+    display: none;
+    flex-direction: column;
+    z-index: 999;
+  }
+  
+  .user-menu-dropdown a {
+    display: block;
+    padding: 0.65rem 1rem;
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 500;
+    transition: background 0.2s ease;
+  }
+  .user-menu-dropdown a:hover {
+    background: var(--sidebar-hover-bg);
+    color: #fff;
+  }
+  
+  .user-menu-dropdown .user-name {
+    font-weight: 700;
+    padding: 0.75rem 1rem 0.25rem;
+    color: var(--brand-accent);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.25rem;
+  }
+  
+  /* Show dropdown when active */
+  .user-menu.open .user-menu-dropdown {
+    display: flex;
+  }
+  
+  /* Optional: small animation */
+  .user-menu-dropdown {
+    animation: dropdownFade 0.2s ease;
+  }
+  @keyframes dropdownFade {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  

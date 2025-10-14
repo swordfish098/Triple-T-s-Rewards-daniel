@@ -62,8 +62,9 @@
 
   {% include "partials/footer.html" %}
 
-  <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
+  
   {% block scripts %}
+    <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
     <script src="{{ url_for('static', filename='js/truck-rewards.js') }}"></script>
     <script>
@@ -122,6 +123,7 @@
       setInterval(fetchNotificationCount, 30000);
       setInterval(fetchCartCount, 30000);
     </script>
+    <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
   {% endblock %}
 </body>
 </html>
