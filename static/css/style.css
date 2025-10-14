@@ -1,3 +1,93 @@
+.dropdown-theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.75rem 1rem;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.dropdown-theme-toggle .theme-label {
+  flex: 1;
+}
+
+.theme-switch {
+  flex-shrink: 0;
+}
+
+.theme-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.theme-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border);
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.slider::before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--surface);
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--brand-accent);
+}
+
+input:checked + .slider::before {
+  transform: translateX(20px);
+}
+
+.theme-label {
+  margin-left: 0.6rem;
+  color: var(--text);
+}
+/* ================= Dropdown Button for User Menu ================= */
+.dropdown-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  color: var(--text);
+  background: none;
+  border: none;
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
+               Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.dropdown-btn:hover {
+  background: var(--sidebar-hover-bg);
+  color: #fff;
+}
 /* =========================================================
    Triple T’s Rewards – Accessible APP STYLES
    WCAG 2.0 AA compliant (contrast, focus, landmarks)
@@ -86,13 +176,30 @@
      justify-content: flex-start;
    }
    
-   .nav-right {
-     display: flex;
-     align-items: center;
-     gap: 0.75rem;
-     justify-content: flex-end;
-     margin-left: auto;
-   }
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  justify-content: flex-end;
+  margin-left: auto;
+  padding-right: 1rem; /* Added to prevent right-side cutoff */
+  overflow: visible;   /* Ensures icons and dropdowns aren't clipped */
+}
+
+/* === Nav icon alignment and spacing === */
+.nav-right .nav-link svg {
+  vertical-align: middle;
+  margin-right: 0.2rem;   /* space between icon and text */
+  padding-right: 2px;     /* ensures no clipping on right edge */
+  overflow: visible;      /* allows full stroke rendering */
+}
+
+.nav-right .nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.35rem;     /* adds minimal horizontal breathing room */
+}
    
    .nav-link,
    .brand {
@@ -711,67 +818,84 @@
 /* =========================================================
    USER MENU DROPDOWN
    ========================================================= */
-   .user-menu {
-    position: relative;
-  }
-  
-  .user-menu-toggle {
-    background: transparent;
-    border: none;
-    font-size: 1.5rem;
-    color: var(--nav-text);
-    cursor: pointer;
-    transition: color 0.2s ease;
-  }
-  .user-menu-toggle:hover { color: var(--brand-accent); }
-  
-  .user-menu-dropdown {
-    position: absolute;
-    right: 0;
-    top: 120%;
-    min-width: 200px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-    padding: 0.75rem 0;
-    display: none;
-    flex-direction: column;
-    z-index: 999;
-  }
-  
-  .user-menu-dropdown a {
-    display: block;
-    padding: 0.65rem 1rem;
-    text-decoration: none;
-    color: var(--text);
-    font-weight: 500;
-    transition: background 0.2s ease;
-  }
-  .user-menu-dropdown a:hover {
-    background: var(--sidebar-hover-bg);
-    color: #fff;
-  }
-  
-  .user-menu-dropdown .user-name {
-    font-weight: 700;
-    padding: 0.75rem 1rem 0.25rem;
-    color: var(--brand-accent);
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 0.25rem;
-  }
-  
-  /* Show dropdown when active */
-  .user-menu.open .user-menu-dropdown {
-    display: flex;
-  }
-  
-  /* Optional: small animation */
-  .user-menu-dropdown {
-    animation: dropdownFade 0.2s ease;
-  }
-  @keyframes dropdownFade {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  
+.user-menu-container {
+  position: relative;
+  display: inline-block;
+}
+.user-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  z-index: 1000;
+  min-width: 180px;
+  padding: 5px 0;
+}
+.user-menu.open {
+  display: block;
+}
+.user-menu a {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+.user-menu a:hover {
+  background: var(--sidebar-hover-bg);
+  color: #fff;
+}
+.user-menu-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: var(--nav-text);
+  font-size: 1rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  transition: color 0.2s ease;
+}
+.user-menu-toggle:hover {
+  color: var(--brand-accent);
+}
+
+.user-menu-toggle .chevron {
+  transition: transform 0.2s ease;
+}
+
+.user-menu.open ~ .user-menu-toggle .chevron,
+.user-menu-toggle[aria-expanded="true"] .chevron {
+  transform: rotate(180deg);
+}
+
+.user-name {
+  font-weight: 500;
+}
+
+/* ================= Smooth Theme Transition ================= */
+html, body, .app-root, .site-nav, .app-sidebar, .app-main-content {
+  transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+}
+
+.nav-link, .sidebar-link, .user-menu a, .dropdown-btn, .theme-label {
+  transition: color 0.4s ease, background-color 0.4s ease;
+}
+/* Visually hidden helper class for accessible text (WCAG 2.1 AA) */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
