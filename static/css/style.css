@@ -1,3 +1,54 @@
+/* ========== Truck Rewards Cart Page Styles ========== */
+.cart-page h1 {
+  margin-bottom: 1.5rem;
+  color: var(--text);
+}
+
+.cart-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cart-item.card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.cart-item-img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.cart-summary.card {
+  margin-top: 2rem;
+  padding: 1.25rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.clear-cart-form {
+  margin-top: 2rem;
+  text-align: right;
+}
+
+.text-danger {
+  color: #ff4a4a;
+  font-weight: 500;
+}
+
+.cart-footer {
+  margin-top: 2rem;
+}
 .dropdown-theme-toggle {
   display: flex;
   align-items: center;
@@ -898,4 +949,93 @@ html, body, .app-root, .site-nav, .app-sidebar, .app-main-content {
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   border: 0;
+}
+/* ========== Notifications Page ========== */
+.notifications-page h1 {
+  margin-bottom: 1.5rem;
+  color: var(--text);
+}
+
+.notifications-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.notification-item.card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  background: var(--surface);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  transition: background 0.3s ease, transform 0.1s ease;
+}
+
+.notification-item.card:hover {
+  transform: translateY(-2px);
+}
+
+.notification-item.unread {
+  background: rgba(255, 193, 7, 0.15);
+  border-left: 4px solid #ffc107;
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+}
+
+.notification-header .sender strong {
+  color: var(--text);
+}
+
+.notification-header .timestamp {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.message {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.no-notifications {
+  text-align: center;
+  padding: 2rem;
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+/* ========== Send Message Page ========== */
+.message-page h1 {
+  margin-bottom: 1.5rem;
+  color: var(--text);
+}
+
+.message-page .apply-form {
+  max-width: 600px;
+  margin: 2rem auto;
+}
+
+.message-page .form-group {
+  margin-bottom: 1.2rem;
+}
+
+.message-page .form-group label {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.message-page .text-danger {
+  color: #ff4a4a;
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+  display: block;
 }

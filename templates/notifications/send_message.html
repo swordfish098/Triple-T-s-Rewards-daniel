@@ -3,77 +3,34 @@
 {% block title %}Send New Message - TRIPLE T's{% endblock %}
 
 {% block content %}
+<section class="message-page container">
   <h1>Send a New Message</h1>
-  
-  <div class="form-container">
-    <form method="POST" action="{{ url_for('notification_bp.send_message') }}">
-        {{ form.hidden_tag() }}
-        
-        <div class="form-group">
-            {{ form.recipient.label }}
-            {{ form.recipient(class="form-control") }}
-            {% for error in form.recipient.errors %}
-                <span class="error">{{ error }}</span>
-            {% endfor %}
-        </div>
 
-        <div class="form-group">
-            {{ form.message.label }}
-            {{ form.message(class="form-control") }}
-            {% for error in form.message.errors %}
-                <span class="error">{{ error }}</span>
-            {% endfor %}
-        </div>
+  <form method="POST" action="{{ url_for('notification_bp.send_message') }}" class="apply-form">
+    {{ form.hidden_tag() }}
 
-        <div class="form-group">
-            {{ form.submit(class="btn btn-primary") }}
-        </div>
-    </form>
-  </div>
+    <div class="form-group">
+      {{ form.recipient.label }}
+      {{ form.recipient(class="input-field") }}
+      {% for error in form.recipient.errors %}
+        <span class="text-danger">{{ error }}</span>
+      {% endfor %}
+    </div>
+
+    <div class="form-group">
+      {{ form.message.label }}
+      {{ form.message(class="input-field") }}
+      {% for error in form.message.errors %}
+        <span class="text-danger">{{ error }}</span>
+      {% endfor %}
+    </div>
+
+    <div class="form-actions">
+      {{ form.submit(class="btn btn-primary") }}
+      <a href="{{ url_for('notification_bp.notifications') }}" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</section>
 {% endblock %}
 
-{% block styles %}
-<style>
-    /* Basic form styling (adjust to match your global styles) */
-    .form-container {
-        max-width: 500px;
-        margin: 20px auto;
-        padding: 20px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        background-color: #fff;
-    }
-    .form-group {
-        margin-bottom: 15px;
-    }
-    .form-group label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-    }
-    .form-control {
-        width: 100%;
-        padding: 8px;
-        box-sizing: border-box;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-    }
-    textarea.form-control {
-        resize: vertical;
-    }
-    .btn-primary {
-        background-color: #007bff;
-        color: white;
-        padding: 10px 15px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-    .error {
-        color: red;
-        font-size: 0.9em;
-        display: block;
-        margin-top: 5px;
-    }
-</style>
-{% endblock %}
+{% block styles %}{% endblock %}
