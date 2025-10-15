@@ -85,21 +85,11 @@ app = create_app()
 
 @app.before_request
 def enforce_admin_lockouts():
-    # Skip static filles
     if request.endpoint and request.endpoint.startswith("static"):
         return
-
-    if current_user.is_authenticated:
-        # Auto-clear if expired
-        if current_user.LOCKOUT_TIME and datetime.utcnow() >= current_user.LOCKOUT_TIME:
-            current_user.clear_failed_attempts()
-            db.session.commit()
-        # Still locked?
-        elif current_user.is_account_locked():
-            logout_user()
-            flash("Your account is temporarily locked. Please try again later.", "danger")
-            return redirect(url_for("auth.login"))
-
+    if current_user.is_authenticated and current_user.is_account_locked():
+        logout_user()
+        return redirect(url_for("auth.login"))
 
 
 if __name__ == '__main__':

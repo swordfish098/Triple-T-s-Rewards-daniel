@@ -414,8 +414,9 @@ def set_timeout(user_id):
         flash("Duration must be greater than zero.", "danger")
         return redirect(url_for("administrator_bp.timeout_users"))
     
-    user.LOCKOUT_TIME = datetime.utcnow() + timedelta(minutes=minutes)
     user.IS_LOCKED_OUT = 1
+    user.LOCKOUT_TIME = datetime.utcnow() + timedelta(minutes=minutes)
+    user.LOCKED_REASON = "admin"
     db.session.commit()
     
     log_audit_event("ADMIN_TIMEOUT", f"User {user.USERNAME} timed out for {minutes} minutes.")
@@ -426,9 +427,10 @@ def set_timeout(user_id):
 @login_required
 def clear_timeout(user_id):
     user = User.query.get_or_404(user_id)
+    user.FAILED_ATTEMPTS = 0
     user.LOCKOUT_TIME = None
     user.IS_LOCKED_OUT = 0
-    user.FAILED_ATTEMPTS = 0
+    user.LOCKED_REASON = None
     db.session.commit()
     log_audit_event("ADMIN_CLEAR_TIMEOUT", f"Timeout cleared for user {user.USERNAME}.")
     flash(f"Timeout cleared for user {user.USERNAME}.", "success")
