@@ -31,6 +31,7 @@ def _redirect_by_role(user):
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
+    
     if current_user.is_authenticated:
         return _redirect_by_role(current_user)
 
@@ -47,9 +48,15 @@ def login():
             return render_template("common/login.html")
         
         if user.is_account_locked():
-            flash("Account locked due to too many failed login attempts. Please try again later.", "danger")
-            log_audit_event(LOGIN_EVENT, f"user={user.USERNAME} ip={ip} reason=locked")
-            return render_template("common/login.html")
+            if user.LOCKED_REASON == "admin":
+                until = user.LOCKOUT_TIME.strftime("%Y-%m-%d %H:%M:%S") if user.LOCKOUT_TIME else "later"
+                flash(f"Your account has been locked by an administrator until {until}.", "danger")
+                log_audit_event(LOGIN_EVENT, f"user={user.USERNAME} ip={ip} reason=locked")
+                return render_template("common/login.html")
+            else:
+                flash("Account locked. Please Contact your Administrator.", "danger")
+                log_audit_event(LOGIN_EVENT, f"user={user.USERNAME} ip={ip} reason=locked")
+                return render_template("common/login.html")
         
         if not user.check_password(password):
             user.register_failed_attempt()

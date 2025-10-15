@@ -1,13 +1,15 @@
+from datetime import datetime
 import os
-from flask import Flask, render_template
+from flask import Flask, redirect, render_template, request, url_for, flash
 from dotenv import load_dotenv
 from flask_apscheduler import APScheduler
+from flask_login import current_user, logout_user
 from extensions import db, migrate, login_manager, csrf
 from config import Config
 from models import User
 from flask_wtf.csrf import CSRFProtect
 from forms import AboutForm
-from extensions import bcrypt, migrate, login_manager, csrf, bcrypt
+from extensions import bcrypt, migrate, login_manager, csrf, bcrypt, db
 
 # Initialize scheduler
 scheduler = APScheduler()
@@ -75,7 +77,20 @@ def create_app():
 def load_user(user_id: str):
     return db.session.get(User, int(user_id))
 
+@login_manager.unauthorized_handler
+def unauth():
+    return redirect(url_for("auth.login"))
+
 app = create_app()
+
+@app.before_request
+def enforce_admin_lockouts():
+    if request.endpoint and request.endpoint.startswith("static"):
+        return
+    if current_user.is_authenticated and current_user.is_account_locked():
+        logout_user()
+        return redirect(url_for("auth.login"))
+
 
 if __name__ == '__main__':
     app.run(debug=True)
