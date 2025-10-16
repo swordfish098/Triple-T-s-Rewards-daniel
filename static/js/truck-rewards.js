@@ -38,7 +38,11 @@ async function loadProducts(query = '', minPrice = '', maxPrice = '') {
   }
 }
 
-async function addToCart(productData) {
+async function addToCart(productData, button) {
+  // Disable the button immediately
+  button.disabled = true;
+  button.textContent = 'Adding...';
+
   try {
     const csrfToken = document.querySelector('input[name="csrf_token"]').value;
 
@@ -46,7 +50,7 @@ async function addToCart(productData) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'X-CSRFToken': csrfToken 
+        'X-CSRFToken': csrfToken
       },
       body: new URLSearchParams(productData)
     });
@@ -60,6 +64,10 @@ async function addToCart(productData) {
   } catch (err) {
     console.error("Error adding to cart:", err);
     alert("There was an error adding the item to your cart.");
+  } finally {
+    // Re-enable the button after the request is complete
+    button.disabled = false;
+    button.textContent = 'Add to Cart';
   }
 }
 
@@ -101,7 +109,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('products').addEventListener('click', (event) => {
     if (event.target && event.target.classList.contains('add-to-cart-btn')) {
       const productData = JSON.parse(event.target.dataset.product);
-      addToCart(productData);
+      // Pass the clicked button (event.target) to the function
+      addToCart(productData, event.target);
     }
     if (event.target && event.target.classList.contains('add-to-wishlist-btn')) {
       const productData = JSON.parse(event.target.dataset.product);

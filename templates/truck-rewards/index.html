@@ -5,7 +5,6 @@
 {% block styles %}
   {{ super() }} {# <-- IMPORTANT: include base styles #}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/truck-rewards.css') }}">
-  <script src="{{ url_for('static', filename='js/truck-rewards.js') }}"></script>
 {% endblock %}
 
 {% block content %}
@@ -29,6 +28,5 @@
 {% endblock %}
 
 {% block scripts %}
-  {{ super() }} {# keep base scripts #}
-  <script src="{{ url_for('static', filename='js/truck-rewards.js') }}"></script>
+  {{ super() }} <script src="{{ url_for('static', filename='js/truck-rewards.js') }}"></script>
 {% endblock %}
