@@ -7,6 +7,7 @@ from sqlalchemy import or_
 from common.logging import (LOGIN_EVENT,
     SALES_BY_SPONSOR, SALES_BY_DRIVER, INVOICE_EVENT,
     DRIVER_POINTS)
+from common.logging import (LOGIN_EVENT, SALES_BY_SPONSOR, SALES_BY_DRIVER, INVOICE_EVENT, DRIVER_POINTS, log_audit_event)
 from datetime import datetime, timedelta
 from models import db, Sponsor
 import csv
@@ -15,7 +16,7 @@ from io import StringIO
 # Blueprint for administrator-related routes
 administrator_bp = Blueprint('administrator_bp', __name__, template_folder="../templates")
 
-@administrator_bp.get("audit_logs/export")
+@administrator_bp.get("/audit_logs/export")
 @role_required(Role.ADMINISTRATOR, allow_admin=False)
 def export_audit_csv():
     selected_type = request.args.get("type") or request.args.get("event_type")
@@ -446,3 +447,41 @@ def sponsor_decision(sponsor_id, decision):
     db.session.commit()
     flash(f"Sponsor {decision}d!", "info")
     return redirect(url_for("adminstrator_bp.review_sponsors"))
+
+@administrator_bp.get("/timeouts")
+@role_required(Role.ADMINISTRATOR)
+def timeout_users():
+    users = User.query.order_by(User.USERNAME.asc()).all()
+    return render_template("administrator/timeout_users.html", users=users)
+
+@administrator_bp.post("/set_timeout/<int:user_id>")
+@role_required(Role.ADMINISTRATOR)
+def set_timeout(user_id):
+    minutes = int(request.form.get("minutes", 0))
+    user = User.query.get_or_404(user_id)
+    
+    if minutes <= 0:
+        flash("Duration must be greater than zero.", "danger")
+        return redirect(url_for("administrator_bp.timeout_users"))
+    
+    user.IS_LOCKED_OUT = 1
+    user.LOCKOUT_TIME = datetime.utcnow() + timedelta(minutes=minutes)
+    user.LOCKED_REASON = "admin"
+    db.session.commit()
+    
+    log_audit_event("ADMIN_TIMEOUT", f"User {user.USERNAME} timed out for {minutes} minutes.")
+    flash(f"User {user.USERNAME} has been timed out for {minutes} minutes.", "info")
+    return redirect(url_for("administrator_bp.timeout_users"))
+
+@administrator_bp.route("/clear_timeout/<int:user_id>", methods=["POST"])
+@login_required
+def clear_timeout(user_id):
+    user = User.query.get_or_404(user_id)
+    user.FAILED_ATTEMPTS = 0
+    user.LOCKOUT_TIME = None
+    user.IS_LOCKED_OUT = 0
+    user.LOCKED_REASON = None
+    db.session.commit()
+    log_audit_event("ADMIN_CLEAR_TIMEOUT", f"Timeout cleared for user {user.USERNAME}.")
+    flash(f"Timeout cleared for user {user.USERNAME}.", "success")
+    return redirect(url_for("administrator_bp.timeout_users"))

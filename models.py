@@ -49,6 +49,7 @@ class User(db.Model, UserMixin):
     CREATED_AT = db.Column(db.DateTime, nullable=False)
     POINTS = db.Column(db.Integer, default=0, nullable=False)
     PHONE = db.Column(db.String(15), nullable=True)
+    LOCKED_REASON = db.Column(db.String(100), nullable=True)
     wants_point_notifications = db.Column(db.Boolean, default=True, nullable=False)
     wants_order_notifications = db.Column(db.Boolean, default=True, nullable=False)
     addresses = db.relationship('Address', backref='user', lazy=True, cascade="all, delete-orphan")
@@ -97,11 +98,13 @@ class User(db.Model, UserMixin):
         if self.FAILED_ATTEMPTS >= LOCKOUT_ATTEMPTS:
             self.LOCKOUT_TIME = datetime.utcnow() + timedelta(minutes=15)
             self.IS_LOCKED_OUT = 1
+            self.LOCKED_REASON = "failed_attempts"
 
     def clear_failed_attempts(self):
         self.FAILED_ATTEMPTS = 0
         self.LOCKOUT_TIME = None
         self.IS_LOCKED_OUT = 0
+        self.LOCKED_REASON = None
 
     def generate_reset_token(self) -> str:
         token = secrets.token_urlsafe(48)
