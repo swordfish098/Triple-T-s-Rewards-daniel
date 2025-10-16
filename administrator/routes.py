@@ -4,6 +4,9 @@ from common.decorators import role_required
 from models import User, Role, AuditLog
 from extensions import db
 from sqlalchemy import or_
+from common.logging import (LOGIN_EVENT,
+    SALES_BY_SPONSOR, SALES_BY_DRIVER, INVOICE_EVENT,
+    DRIVER_POINTS)
 from common.logging import (LOGIN_EVENT, SALES_BY_SPONSOR, SALES_BY_DRIVER, INVOICE_EVENT, DRIVER_POINTS, log_audit_event)
 from datetime import datetime, timedelta
 from models import db, Sponsor
@@ -16,11 +19,28 @@ administrator_bp = Blueprint('administrator_bp', __name__, template_folder="../t
 @administrator_bp.get("/audit_logs/export")
 @role_required(Role.ADMINISTRATOR, allow_admin=False)
 def export_audit_csv():
+    selected_type = request.args.get("type") or request.args.get("event_type")
+    start_str = request.args.get("start")
+    end_str = request.args.get("end")
+    
+    def parse_date(date_str):
+        try:
+            return datetime.strptime(date_str, "%Y-%m-%d")
+        except (ValueError, TypeError):
+            return None
+
+    start_dt = parse_date(start_str)
+    end_dt = parse_date(end_str)
+
     event_type = request.args.get("event_type")
     q = AuditLog.query.order_by(AuditLog.CREATED_AT.desc())
     if event_type:
         q = q.filter(AuditLog.EVENT_TYPE == event_type)
-    rows = q.all()
+    if start_dt:
+        q = q.filter(AuditLog.CREATED_AT >= start_dt)
+    if end_dt:
+        q = q.filter(AuditLog.CREATED_AT < end_dt + timedelta(days=1))
+    rows = q.order_by(AuditLog.CREATED_AT.desc()).all()
     
     si = StringIO()
     cw = csv.writer(si)
@@ -113,20 +133,43 @@ def dashboard():
 @administrator_bp.get('/audit_logs/view')
 @role_required(Role.ADMINISTRATOR, allow_admin=False)
 def view_audit_logs():
+    select_type = request.args.get("type")
+    start_str = request.args.get("start")
+    end_str = request.args.get("end")
+    
     event_type = request.args.get("event_type")
-    allowed = {LOGIN_EVENT, SALES_BY_SPONSOR, SALES_BY_DRIVER, INVOICE_EVENT, DRIVER_POINTS}
-    if event_type not in allowed:
-        flash("Unknown audit log type.", "warning")
-        return redirect(url_for("administrator_bp.audit_menu"))
 
-    q = AuditLog.query.order_by(AuditLog.CREATED_AT.desc())
-    if event_type:
-        q = q.filter(AuditLog.EVENT_TYPE == event_type)
+    allowed = {LOGIN_EVENT, SALES_BY_SPONSOR, SALES_BY_DRIVER, INVOICE_EVENT, DRIVER_POINTS}
+    if select_type and select_type not in allowed:
+        flash("Unknown audit log type.", "warning")
+        select_type = None
+
+    q = AuditLog.query
+    if select_type:
+        q = q.filter(AuditLog.EVENT_TYPE == select_type)
         
     events = q.limit(500).all()
+    
+    def parse_date(s):
+        if not s:
+            return None
+        try:
+            return datetime.strptime(s, "%Y-%m-%d")
+        except ValueError:
+            return None
+    
+    start_dt = parse_date(start_str)
+    end_dt = parse_date(end_str)
+
+    if start_dt:
+        q = q.filter(AuditLog.CREATED_AT >= start_dt)
+    if end_dt:
+        q = q.filter(AuditLog.CREATED_AT < end_dt + timedelta(days=1))
+
+    events = q.order_by(AuditLog.CREATED_AT.desc()).limit(500).all()
 
     logs = (AuditLog.query
-            .filter(AuditLog.EVENT_TYPE == event_type)
+            .filter(AuditLog.EVENT_TYPE == select_type)
             .order_by(AuditLog.CREATED_AT.desc())
             .limit(200)
             .all())
@@ -139,9 +182,16 @@ def view_audit_logs():
         INVOICE_EVENT: "Invoices",
         DRIVER_POINTS: "Driver Point Tracking",
     }
+
+    title = titles.get(select_type, "Audit Logs")
+    
     return render_template(
         "administrator/audit_list.html",
-        title=titles.get(event_type, "Unknown Event"),
+        logs = logs,
+        start=start_str,
+        end=end_str,
+        select_type=select_type,
+        title=titles.get(event_type, "Audit Logs"),
         events=events,
         event_type=event_type
     )
