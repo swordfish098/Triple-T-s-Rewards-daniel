@@ -136,34 +136,39 @@ def view_audit_logs():
     start_str = request.args.get("start")
     end_str = request.args.get("end")
     
-    
     event_type = request.args.get("event_type")
-    allowed = {LOGIN_EVENT, SALES_BY_SPONSOR, SALES_BY_DRIVER, INVOICE_EVENT, DRIVER_POINTS}
-    if event_type not in allowed:
-        flash("Unknown audit log type.", "warning")
-        return redirect(url_for("administrator_bp.audit_menu"))
 
-    q = AuditLog.query.order_by(AuditLog.CREATED_AT.desc())
-    if event_type:
-        q = q.filter(AuditLog.EVENT_TYPE == event_type)
+    allowed = {LOGIN_EVENT, SALES_BY_SPONSOR, SALES_BY_DRIVER, INVOICE_EVENT, DRIVER_POINTS}
+    if select_type and select_type not in allowed:
+        flash("Unknown audit log type.", "warning")
+        select_type = None
+
+    q = AuditLog.query
+    if select_type:
+        q = q.filter(AuditLog.EVENT_TYPE == select_type)
         
     events = q.limit(500).all()
     
-    def parse_date(date_str):
-        try:
-            return datetime.strptime(date_str, "%Y-%m-%d")
-        except (ValueError, TypeError):
+    def parse_date(s):
+        if not s:
             return None
+        try:
+            return datetime.strptime(s, "%Y-%m-%d")
+        except ValueError:
+            return None
+    
     start_dt = parse_date(start_str)
     end_dt = parse_date(end_str)
+
     if start_dt:
         q = q.filter(AuditLog.CREATED_AT >= start_dt)
     if end_dt:
         q = q.filter(AuditLog.CREATED_AT < end_dt + timedelta(days=1))
-    
+
+    events = q.order_by(AuditLog.CREATED_AT.desc()).limit(500).all()
 
     logs = (AuditLog.query
-            .filter(AuditLog.EVENT_TYPE == event_type)
+            .filter(AuditLog.EVENT_TYPE == select_type)
             .order_by(AuditLog.CREATED_AT.desc())
             .limit(200)
             .all())
@@ -176,6 +181,9 @@ def view_audit_logs():
         INVOICE_EVENT: "Invoices",
         DRIVER_POINTS: "Driver Point Tracking",
     }
+
+    title = titles.get(select_type, "Audit Logs")
+    
     return render_template(
         "administrator/audit_list.html",
         logs = logs,

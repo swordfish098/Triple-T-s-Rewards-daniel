@@ -22,16 +22,6 @@
 
     <!-- Date section -->
     <div class="filter-section" data-mode="date">
-      <label>Preset
-        <select name="date_preset" id="date-preset">
-          <option value="">-- Select --</option>
-          <option value="today"     {{ 'selected' if date_preset=='today' else '' }}>Today</option>
-          <option value="yesterday" {{ 'selected' if date_preset=='yesterday' else '' }}>Yesterday</option>
-          <option value="last7"     {{ 'selected' if date_preset=='last7' else '' }}>Last 7 Days</option>
-          <option value="last30"    {{ 'selected' if date_preset=='last30' else '' }}>Last 30 Days</option>
-          <option value="custom"    {{ 'selected' if date_preset=='custom' else '' }}>Custom Range</option>
-        </select>
-      </label>
       <div class="custom-dates" {{ '' if date_preset=='custom' else 'hidden' }}>
         <label>Start <input type="date" name="start" value="{{ start or '' }}"></label>
         <label>End   <input type="date" name="end"   value="{{ end or '' }}"></label>
