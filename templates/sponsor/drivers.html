@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
   <main class="app-main-content container">
-    <h1>Sponsor Dashboard</h1>
+    <h1>Driver Management</h1>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -11,15 +11,38 @@
       {% endif %}
     {% endwith %}
 
-    <div class="dashboard-links">
-      <a href="{{ url_for('sponsor_bp.manage_points_page') }}" class="btn btn-primary">Award / Remove Points</a>
-      <a href="{{ url_for('sponsor_bp.driver_management') }}" class="btn btn-primary">Driver Management</a>
-      <a href="{{ url_for('sponsor_bp.review_driver_applications') }}" class="btn btn-primary">Review Applications</a>
-      <a href="{{ url_for('sponsor_bp.update_settings') }}" class="btn btn-primary">Store Settings</a>
-      <a href="{{ url_for('sponsor_bp.list_sponsor_users') }}" class="btn btn-primary">Sponsor Accounts</a>
-    </div>
+    <p>
+        Sort by:
+        <a href="{{ url_for('sponsor_bp.driver_management', sort_by='USERNAME') }}">Username</a> |
+        <a href="{{ url_for('sponsor_bp.driver_management', sort_by='POINTS') }}">Points</a>
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="padding-right: 20px;">Username</th>
+                <th style="padding-right: 20px;">Points</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for driver in drivers %}
+            <tr>
+                <td>{{ driver.USERNAME }}</td>
+                <td>{{ driver.POINTS }}</td>
+                <td>
+                    <a href="{{ url_for('sponsor_bp.driver_purchase_history', driver_id=driver.USER_CODE) }}">Purchase History</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="3">No drivers found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
     <div class="spacer"></div>
-    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline">Logout</a>
+    <a href="{{ url_for('sponsor_bp.dashboard') }}" class="btn btn-outline">Back to Dashboard</a>
   </main>
 {% endblock %}

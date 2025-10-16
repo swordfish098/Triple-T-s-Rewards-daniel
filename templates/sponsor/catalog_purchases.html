@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Catalog Purchases{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>All Purchases From Your Catalog</h2>
+    <hr>
+    <h4>Total Items Sold: {{ total_items or 0 }}</h4>
+    <br>
+    {% if purchases %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Driver</th>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Points Spent</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for purchase in purchases %}
+                    <tr>
+                        <td>{{ purchase.purchase_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ purchase.user.USERNAME }}</td>
+                        <td>{{ purchase.title }}</td>
+                        <td>{{ purchase.quantity }}</td>
+                        <td>{{ purchase.points }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>There have been no purchases from your catalog yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

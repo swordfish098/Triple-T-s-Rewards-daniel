@@ -12,7 +12,6 @@
   {% endwith %}
 
   {% if drivers %}
-    <!-- ====== Points Summary Section ====== -->
     <section class="summary-section">
       {% set total_points = drivers | sum(attribute='POINTS') %}
       {% set avg_points = (total_points / (drivers|length)) | round(2) %}
@@ -28,7 +27,6 @@
       </div>
     </section>
 
-    <!-- ====== Driver Table ====== -->
     <section class="data-section">
       <table class="data-table">
         <thead>
@@ -43,9 +41,11 @@
           {% for driver in drivers %}
           <tr>
             <td>{{ driver.USERNAME }}</td>
-            <td>{{ driver.POINTS }}</td>
+            <td>
+              <span class="current-points">{{ driver.POINTS }}</span>
+              <span class="points-preview" style="color: #007bff; font-style: italic; margin-left: 8px;"></span>
+            </td>
 
-            <!-- Award form -->
             <td>
               <form
                 method="POST"
@@ -66,7 +66,6 @@
               </form>
             </td>
 
-            <!-- Remove form -->
             <td>
               <form
                 method="POST"
@@ -104,4 +103,6 @@
   <div class="spacer"></div>
   <a href="{{ url_for('sponsor_bp.dashboard') }}" class="btn btn-outline">← Back to Dashboard</a>
 </main>
+
+<script src="{{ url_for('static', filename='js/points_preview.js') }}"></script>
 {% endblock %}

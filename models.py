@@ -7,6 +7,7 @@ from english_words import english_words_set
 import random
 import string
 from flask_login import UserMixin
+from sqlalchemy.orm import relationship
 
 LOCKOUT_ATTEMPTS = 3
 WORDS = list(english_words_set)
@@ -38,7 +39,6 @@ class AboutInfo(db.Model):
     
 class User(db.Model, UserMixin):
     __tablename__ = 'USERS'
-    #User PI
     USER_CODE = db.Column(db.Integer, primary_key=True)
     USERNAME = db.Column(db.String(50), unique=True, nullable=False)
     PASS = db.Column(db.String(255), nullable=True)  
@@ -47,7 +47,6 @@ class User(db.Model, UserMixin):
     LNAME = db.Column(db.String(50), nullable=False)
     EMAIL = db.Column(db.String(100), nullable=False)
     CREATED_AT = db.Column(db.DateTime, nullable=False)
-    POINTS = db.Column(db.Integer, default=0, nullable=False)
     PHONE = db.Column(db.String(15), nullable=True)
     LOCKED_REASON = db.Column(db.String(100), nullable=True)
     wants_point_notifications = db.Column(db.Boolean, default=True, nullable=False)
@@ -55,7 +54,6 @@ class User(db.Model, UserMixin):
     addresses = db.relationship('Address', backref='user', lazy=True, cascade="all, delete-orphan")
     wishlist_items = db.relationship('WishlistItem', backref='user', lazy=True, cascade="all, delete-orphan")
 
-    #User account
     IS_ACTIVE = db.Column(db.Integer, nullable=False)
     FAILED_ATTEMPTS = db.Column(db.Integer, default=0, nullable=False)
     LOCKOUT_TIME = db.Column(db.DateTime, nullable=True)
@@ -77,7 +75,10 @@ class User(db.Model, UserMixin):
         numbers = ''.join(secrets.choice(string.digits) for _ in range(num_digits))
         password = word + numbers
         
-        self.PASS = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        # --- Start of Fix ---
+        # This now uses the correct method from the Flask-Bcrypt extension
+        self.PASS = bcrypt.generate_password_hash(password).decode('utf-8')
+        # --- End of Fix ---
         
         return password
 
@@ -136,6 +137,15 @@ class Admin(db.Model):
     ADMIN_ID = db.Column(db.Integer, db.ForeignKey("USERS.USER_CODE", ondelete="CASCADE"), primary_key=True)
     ROLE_TITLE = db.Column(db.String(100))
 
+class DriverSponsorAssociation(db.Model):
+    __tablename__ = 'DRIVER_SPONSOR_ASSOCIATIONS'
+    driver_id = db.Column(db.Integer, db.ForeignKey('DRIVERS.DRIVER_ID', ondelete="CASCADE"), primary_key=True)
+    sponsor_id = db.Column(db.Integer, db.ForeignKey('SPONSORS.SPONSOR_ID', ondelete="CASCADE"), primary_key=True)
+    points = db.Column(db.Integer, default=0, nullable=False)
+
+    driver = relationship("Driver", backref=db.backref("sponsor_associations", cascade="all, delete-orphan"))
+    sponsor = relationship("Sponsor", backref=db.backref("driver_associations", cascade="all, delete-orphan"))
+
 class DriverApplication(db.Model):
     __tablename__ = "DRIVER_APPLICATIONS"
     APPLICATION_ID = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -150,13 +160,16 @@ class DriverApplication(db.Model):
 class StoreSettings(db.Model):
     __tablename__ = 'STORE_SETTINGS'
     id = db.Column(db.Integer, primary_key=True)
+    sponsor_id = db.Column(db.Integer, db.ForeignKey('SPONSORS.SPONSOR_ID', ondelete="CASCADE"), nullable=False, unique=True)
     ebay_category_id = db.Column(db.String(50), nullable=False, default='2984')
     point_ratio = db.Column(db.Integer, nullable=False, default=10)
+    sponsor = relationship("Sponsor", backref="store_settings", uselist=False)
 
 class CartItem(db.Model):
     __tablename__ = 'CART_ITEMS'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('USERS.USER_CODE'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('USERS.USER_CODE', ondelete="CASCADE"), nullable=False)
+    sponsor_id = db.Column(db.Integer, db.ForeignKey('SPONSORS.SPONSOR_ID', ondelete="CASCADE"), nullable=False)
     item_id = db.Column(db.String(255), nullable=False)
     title = db.Column(db.String(255), nullable=False)
     price = db.Column(db.Float, nullable=False)
@@ -192,6 +205,18 @@ class Notification(db.Model):
             db.session.rollback()
             raise e
         return notification
+
+class Purchase(db.Model):
+    __tablename__ = 'PURCHASES'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('USERS.USER_CODE', ondelete="CASCADE"), nullable=False)
+    sponsor_id = db.Column(db.Integer, db.ForeignKey('SPONSORS.SPONSOR_ID', ondelete="CASCADE"), nullable=False)
+    item_id = db.Column(db.String(255), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    points = db.Column(db.Integer, nullable=False)
+    quantity = db.Column(db.Integer, nullable=False, default=1)
+    purchase_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    user = db.relationship('User', backref=db.backref('purchases', lazy=True))
     
 class Address(db.Model):
     __tablename__ = 'ADDRESSES'

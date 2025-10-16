@@ -1,8 +1,6 @@
-# jchampion136/triple-t-s-rewards-team12/Triple-T-s-Rewards-Team12-51de9b373ff72c36ad6ce76b39ff03679a536ebc/truck_rewards/routes.py
-
-from flask import Blueprint, render_template, jsonify, request, flash, redirect, url_for
+from flask import Blueprint, render_template, jsonify, request, flash, redirect, url_for, session
 from flask_login import login_required, current_user
-from models import StoreSettings, CartItem, User, Notification, Address, WishlistItem
+from models import StoreSettings, CartItem, User, Notification, Address, WishlistItem, DriverSponsorAssociation, Purchase, Sponsor
 from extensions import db
 import requests
 import os
@@ -49,19 +47,31 @@ def get_ebay_access_token():
 
 # --- Main Store Route ---
 @rewards_bp.route('/')
+@login_required
 def store():
+    sponsor_id = session.get('current_sponsor_id')
+    if not sponsor_id:
+        flash("Please select a sponsor's store from your dashboard.", "info")
+        return redirect(url_for('driver_bp.dashboard'))
     return render_template('truck-rewards/index.html')
 
-# --- Products API Endpoint ---
+# --- Products API Endpoint (depends on session) ---
 @rewards_bp.route("/products")
+@login_required
 def products():
-    settings = StoreSettings.query.first()
+    sponsor_id = session.get('current_sponsor_id')
+    if not sponsor_id:
+        return jsonify({"error": "No sponsor store selected"}), 400
+
+    settings = StoreSettings.query.filter_by(sponsor_id=sponsor_id).first()
     if not settings:
+        # Fallback to default if a sponsor hasn't configured their store yet
         category_id = "2984"
         point_ratio = 10
     else:
         category_id = settings.ebay_category_id
         point_ratio = settings.point_ratio
+        
     search_query = request.args.get('q')
     min_price = request.args.get('min_price')
     max_price = request.args.get('max_price')
@@ -73,12 +83,10 @@ def products():
     else:
         search_url = "https://api.ebay.com/buy/browse/v1/item_summary/search"
     headers = { "Authorization": f"Bearer {access_token}" }
-    params = { "limit": 20 }
+    params = { "limit": 20, "category_ids": category_id }
     if search_query:
         params['q'] = search_query
-        params['category_ids'] = category_id
-    else:
-        params['category_ids'] = category_id
+
     filters = []
     if min_price or max_price:
         price_range = f"price:[{min_price or ''}..{max_price or ''}]"
@@ -102,31 +110,34 @@ def products():
                     "image": item.get("image", {}).get("imageUrl", ""),
                     "pointsEquivalent": int(price_float * point_ratio)
                 })
-        print(f"Products found: {len(products)}")
         return jsonify(products)
     except Exception as e:
         print(f"Error fetching products from eBay: {e}")
         return jsonify({"error": "Could not retrieve products from eBay"}), 500
 
-# --- CART FUNCTIONS ---
+# --- CART FUNCTIONS (now sponsor-aware) ---
 
 @rewards_bp.route("/add_to_cart", methods=['POST'])
 @login_required
 def add_to_cart():
-    """Adds an item to the current user's cart."""
+    sponsor_id = session.get('current_sponsor_id')
+    if not sponsor_id:
+        return jsonify({"status": "error", "message": "No sponsor selected."}), 400
+
     item_id = request.form.get('id')
     title = request.form.get('title')
     price = request.form.get('price', type=float)
     points = request.form.get('pointsEquivalent', type=int)
     image_url = request.form.get('image')
 
-    existing_item = CartItem.query.filter_by(user_id=current_user.USER_CODE, item_id=item_id).first()
+    existing_item = CartItem.query.filter_by(user_id=current_user.USER_CODE, item_id=item_id, sponsor_id=sponsor_id).first()
 
     if existing_item:
         existing_item.quantity += 1
     else:
         new_item = CartItem(
             user_id=current_user.USER_CODE,
+            sponsor_id=sponsor_id,
             item_id=item_id,
             title=title,
             price=price,
@@ -141,19 +152,25 @@ def add_to_cart():
 @rewards_bp.route("/cart")
 @login_required
 def view_cart():
-    """Displays the user's shopping cart."""
-    cart_items = CartItem.query.filter_by(user_id=current_user.USER_CODE).all()
+    sponsor_id = session.get('current_sponsor_id')
+    if not sponsor_id:
+        flash("Please select a sponsor's store to view your cart.", "info")
+        return redirect(url_for('driver_bp.dashboard'))
+        
+    cart_items = CartItem.query.filter_by(user_id=current_user.USER_CODE, sponsor_id=sponsor_id).all()
+    association = DriverSponsorAssociation.query.get((current_user.USER_CODE, sponsor_id))
+    current_points = association.points if association else 0
     total_points = sum(item.points * item.quantity for item in cart_items)
     addresses = Address.query.filter_by(user_id=current_user.USER_CODE).all()
-    return render_template('truck-rewards/cart.html', cart_items=cart_items, total_points=total_points, addresses=addresses)
+    
+    return render_template('truck-rewards/cart.html', cart_items=cart_items, total_points=total_points, current_points=current_points, addresses=addresses)
 
 @rewards_bp.route("/remove_from_cart/<int:item_id>", methods=['POST'])
 @login_required
 def remove_from_cart(item_id):
-    """Removes an item from the cart."""
     item_to_remove = CartItem.query.get_or_404(item_id)
     if item_to_remove.user_id != current_user.USER_CODE:
-        flash("You can only remove your own items.", "danger")
+        flash("You are not authorized to modify this item.", "danger")
         return redirect(url_for('rewards_bp.view_cart'))
 
     db.session.delete(item_to_remove)
@@ -164,32 +181,35 @@ def remove_from_cart(item_id):
 @rewards_bp.route("/cart/clear", methods=['POST'])
 @login_required
 def clear_cart():
-    """Clears all items from the user's cart."""
-    CartItem.query.filter_by(user_id=current_user.USER_CODE).delete()
+    sponsor_id = session.get('current_sponsor_id')
+    if not sponsor_id:
+        return redirect(url_for('driver_bp.dashboard'))
+
+    CartItem.query.filter_by(user_id=current_user.USER_CODE, sponsor_id=sponsor_id).delete()
     db.session.commit()
-    flash("Your cart has been cleared.", "info")
+    flash("Your cart for this sponsor has been cleared.", "info")
     return redirect(url_for('rewards_bp.view_cart'))
 
 @rewards_bp.route("/cart/count")
 @login_required
 def cart_count():
-    """Returns the total number of items in the cart."""
-    count = db.session.query(db.func.sum(CartItem.quantity)).filter_by(user_id=current_user.USER_CODE).scalar()
+    sponsor_id = session.get('current_sponsor_id')
+    if not sponsor_id:
+        return jsonify({'count': 0})
+        
+    count = db.session.query(db.func.sum(CartItem.quantity)).filter_by(user_id=current_user.USER_CODE, sponsor_id=sponsor_id).scalar()
     return jsonify({'count': count or 0})
 
 @rewards_bp.route("/wishlist")
 @login_required
 def view_wishlist():
-    """Displays the user's wishlist."""
     return render_template('truck-rewards/wishlist.html')
 
 @rewards_bp.route("/wishlist/add", methods=['POST'])
 @login_required
 def add_to_wishlist():
-    """Adds an item to the current user's wishlist."""
     item_id = request.form.get('id')
     
-    # Prevent duplicates
     existing_item = WishlistItem.query.filter_by(user_id=current_user.USER_CODE, item_id=item_id).first()
     if existing_item:
         return jsonify({"status": "error", "message": "This item is already in your wishlist."})
@@ -209,7 +229,6 @@ def add_to_wishlist():
 @rewards_bp.route("/wishlist/remove/<int:item_id>", methods=['POST'])
 @login_required
 def remove_from_wishlist(item_id):
-    """Removes an item from the wishlist."""
     item_to_remove = WishlistItem.query.get_or_404(item_id)
     if item_to_remove.user_id != current_user.USER_CODE:
         flash("You can only remove your own items.", "danger")
@@ -223,25 +242,51 @@ def remove_from_wishlist(item_id):
 @rewards_bp.route("/checkout", methods=['POST'])
 @login_required
 def checkout():
-    """Processes the cart purchase."""
-    cart_items = CartItem.query.filter_by(user_id=current_user.USER_CODE).all()
+    sponsor_id = session.get('current_sponsor_id')
+    if not sponsor_id:
+        flash("Your session has expired. Please select a store again.", "danger")
+        return redirect(url_for('driver_bp.dashboard'))
+
+    association = DriverSponsorAssociation.query.get((current_user.USER_CODE, sponsor_id))
+    cart_items = CartItem.query.filter_by(user_id=current_user.USER_CODE, sponsor_id=sponsor_id).all()
     total_points = sum(item.points * item.quantity for item in cart_items)
 
-    if current_user.POINTS < total_points:
-        flash("You do not have enough points to complete this purchase.", "danger")
+    if not association or association.points < total_points:
+        flash("You do not have enough points with this sponsor to complete this purchase.", "danger")
         return redirect(url_for('rewards_bp.view_cart'))
 
-    current_user.POINTS -= total_points
-    
-    # Send notification if enabled
+    association.points -= total_points
+
+    # Send order confirmation to driver
     if current_user.wants_order_notifications:
         Notification.create_notification(
             recipient_code=current_user.USER_CODE,
-            sender_code=current_user.USER_CODE, # Or a system user ID if you create one
+            sender_code=sponsor_id,
             message=f"Your order for {total_points} points has been placed successfully!"
         )
 
+    # Notify sponsor of the purchase
+    sponsor = Sponsor.query.get(sponsor_id)
+    if sponsor:
+        for item in cart_items:
+            message = f"Driver {current_user.USERNAME} purchased {item.title} for {item.points} points from your catalog."
+            Notification.create_notification(
+                recipient_code=sponsor.SPONSOR_ID,
+                sender_code=current_user.USER_CODE,
+                message=message
+            )
+
+    # Record purchase and clear cart
     for item in cart_items:
+        purchase = Purchase(
+            user_id=current_user.USER_CODE,
+            sponsor_id=sponsor_id,
+            item_id=item.item_id,
+            title=item.title,
+            points=item.points,
+            quantity=item.quantity
+        )
+        db.session.add(purchase)
         db.session.delete(item)
     
     db.session.commit()
