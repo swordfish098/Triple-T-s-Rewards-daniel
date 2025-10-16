@@ -61,6 +61,7 @@ class User(db.Model, UserMixin):
     RESET_TOKEN = db.Column(db.String(255), nullable=True, index=True)
     RESET_TOKEN_CREATED_AT = db.Column(db.DateTime, nullable=True)
     IS_LOCKED_OUT = db.Column(db.Integer, nullable=False)
+    LOCKED_REASON = db.Column(db.String(255), nullable=True)
     
     def log_event(self, event_type: str, details: str = None):
         log_entry = AuditLog(EVENT_TYPE=event_type, DETAILS=details)
