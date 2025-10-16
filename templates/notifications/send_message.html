@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Send New Message - TRIPLE T's{% endblock %}
+
+{% block content %}
+<section class="message-page container">
+  <h1>Send a New Message</h1>
+
+  <form method="POST" action="{{ url_for('notification_bp.send_message') }}" class="apply-form">
+    {{ form.hidden_tag() }}
+
+    <div class="form-group">
+      {{ form.recipient.label }}
+      {{ form.recipient(class="input-field") }}
+      {% for error in form.recipient.errors %}
+        <span class="text-danger">{{ error }}</span>
+      {% endfor %}
+    </div>
+
+    <div class="form-group">
+      {{ form.message.label }}
+      {{ form.message(class="input-field") }}
+      {% for error in form.message.errors %}
+        <span class="text-danger">{{ error }}</span>
+      {% endfor %}
+    </div>
+
+    <div class="form-actions">
+      {{ form.submit(class="btn btn-primary") }}
+      <a href="{{ url_for('notification_bp.notifications') }}" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}
+
+{% block styles %}{% endblock %}
