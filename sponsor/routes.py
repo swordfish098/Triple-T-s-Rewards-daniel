@@ -243,11 +243,34 @@ def add_user():
     # Show the form to add a new driver
     return render_template('sponsor/add_user.html')
 
+def get_accepted_drivers_for_sponsor(sponsor_user_code):
+    """
+    Retrieves all drivers who have an 'Accepted' application status 
+    with the given sponsor_user_code using a two-step query for stability.
+    """
+    # Step 1: Filter the DriverApplication table for accepted apps for this sponsor
+    accepted_apps = DriverApplication.query.filter(
+        DriverApplication.SPONSOR_ID == sponsor_user_code,
+        DriverApplication.STATUS == "Accepted" 
+    ).all()
+
+    # If no accepted applications, return an empty list immediately
+    if not accepted_apps:
+        return []
+
+    # Step 2: Get the list of DRIVER_ID codes from the accepted applications
+    driver_codes = [app.DRIVER_ID for app in accepted_apps]
+
+    # Step 3: Filter the User table to get the full driver objects
+    drivers = User.query.filter(User.USER_CODE.in_(driver_codes)).all()
+
+    return drivers
+
 @sponsor_bp.route('/drivers', methods=['GET'])
 @role_required(Role.SPONSOR, allow_admin=True)
 def driver_management():
-    drivers = User.query.filter_by(USER_TYPE=Role.DRIVER).all()
-    return render_template('sponsor/drivers.html', drivers=drivers)
+    drivers = get_accepted_drivers_for_sponsor(current_user.USER_CODE)
+    return render_template('sponsor/my_organization_drivers.html', drivers=drivers)
 
 # Sponsor Application
 @sponsor_bp.route("/applications")
