@@ -37,7 +37,7 @@
 
       <div class="cart-summary card">
         <h3>Total Points: <span class="summary-value">{{ total_points }}</span></h3>
-        <p>Your Balance: <strong>{{ current_user.POINTS }}</strong> points</p>
+        <p>Your Balance: <strong>{{ current_points }}</strong> points</p>
 
         {% if addresses %}
           <div class="form-group">
@@ -56,7 +56,7 @@
           </p>
         {% endif %}
 
-        {% if current_user.POINTS >= total_points and addresses %}
+        {% if current_points >= total_points and addresses %}
           <form method="POST" action="{{ url_for('rewards_bp.checkout') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-primary">Checkout</button>

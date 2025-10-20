@@ -13,7 +13,7 @@
 
   {% if drivers %}
     <section class="summary-section">
-      {% set total_points = drivers | sum(attribute='POINTS') %}
+      {% set total_points = drivers | sum(attribute='points') %}
       {% set avg_points = (total_points / (drivers|length)) | round(2) %}
       <div class="summary-card">
         <div class="summary-item">
@@ -40,16 +40,16 @@
         <tbody>
           {% for driver in drivers %}
           <tr>
-            <td>{{ driver.USERNAME }}</td>
+            <td>{{ driver.user.USERNAME }}</td>
             <td>
-              <span class="current-points">{{ driver.POINTS }}</span>
+              <span class="current-points">{{ driver.points }}</span>
               <span class="points-preview" style="color: #007bff; font-style: italic; margin-left: 8px;"></span>
             </td>
 
             <td>
               <form
                 method="POST"
-                action="{{ url_for('sponsor_bp.manage_points', driver_id=driver.USER_CODE) }}"
+                action="{{ url_for('sponsor_bp.manage_points', driver_id=driver.driver_id) }}"
                 class="points-form"
               >
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -69,7 +69,7 @@
             <td>
               <form
                 method="POST"
-                action="{{ url_for('sponsor_bp.manage_points', driver_id=driver.USER_CODE) }}"
+                action="{{ url_for('sponsor_bp.manage_points', driver_id=driver.driver_id) }}"
                 class="points-form"
               >
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

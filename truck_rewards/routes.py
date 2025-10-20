@@ -257,6 +257,14 @@ def checkout():
 
     association.points -= total_points
 
+    from models import AuditLog # If not already imported
+    
+    log_entry = AuditLog(
+        EVENT_TYPE="DRIVER_POINTS", # Use DRIVER_POINTS from common.logging
+        DETAILS=f"Points deducted for purchase by driver {current_user.USERNAME} (User ID: {current_user.USER_CODE}). Amount: -{total_points} from Sponsor ID: {sponsor_id}."
+    )
+    db.session.add(log_entry)
+
     # Send order confirmation to driver
     if current_user.wants_order_notifications:
         Notification.create_notification(

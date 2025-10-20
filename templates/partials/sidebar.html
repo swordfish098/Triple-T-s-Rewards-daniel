@@ -1,10 +1,4 @@
 <aside class="sidebar">
-  <div class="sidebar-header">
-    <a href="{{ url_for('common.index') }}">
-      <img src="{{ url_for('static', filename='ttt_logo.png') }}" alt="TTT Rewards Logo" class="sidebar-logo">
-    </a>
-    <h1 class="sidebar-title">Triple T's Rewards</h1>
-  </div>
 
   <nav class="sidebar-nav">
     {% if current_user.is_authenticated %}
@@ -16,10 +10,10 @@
     {% if current_user.USER_TYPE == 'administrator' %}
       {% set admin_endpoints = ['administrator.dashboard', 'administrator.view_accounts', 'administrator.add_user', 'administrator.edit_user', 'administrator.review_sponsor_applications', 'administrator.audit_menu', 'administrator.audit_list', 'administrator.locked_users', 'administrator.disabled_accounts', 'administrator.timeout_users'] %}
       <div class="sidebar-section-header">Admin</div>
-      <a href="{{ url_for('administrator.dashboard') }}" class="sidebar-link {{ 'active' if request.endpoint in admin_endpoints else '' }}">
+      <a href="{{ url_for('administrator_bp.dashboard') }}" class="sidebar-link {{ 'active' if request.endpoint == 'administrator_bp.dashboard' else '' }}">
         Admin Dashboard
       </a>
-      <a href="{{ url_for('administrator.audit_menu') }}" class="sidebar-link {{ 'active' if request.endpoint == 'administrator.audit_menu' else '' }}">
+      <a href="{{ url_for('administrator_bp.audit_menu') }}" class="sidebar-link {{ 'active' if request.endpoint == 'administrator.audit_menu' else '' }}">
         Audit Log
       </a>
     {% endif %}

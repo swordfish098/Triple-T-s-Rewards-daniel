@@ -46,7 +46,10 @@ def update_settings():
 @role_required(Role.SPONSOR, allow_admin=True)
 def manage_points_page():
     associations = DriverSponsorAssociation.query.filter_by(sponsor_id=current_user.USER_CODE).all()
-    return render_template('sponsor/points.html', associations=associations)
+    for assoc in associations:
+        # We access the User by the DRIVER_ID on the association model
+        assoc.user = User.query.get(assoc.driver_id)
+    return render_template('sponsor/points.html', drivers=associations)
 
 # Manage points for a specific driver-sponsor relationship
 @sponsor_bp.route('/points/<int:driver_id>', methods=['POST'])
@@ -57,6 +60,9 @@ def manage_points(driver_id):
         flash("Driver is not associated with your organization.", "danger")
         return redirect(url_for('sponsor_bp.manage_points_page'))
 
+    driver_user = User.query.get(driver_id)
+    username = driver_user.USERNAME if driver_user else "Unknown Driver"
+
     action = request.form.get('action')
     points = request.form.get('points', type=int)
     reason = request.form.get('reason', '').strip() or "No reason provided."
@@ -65,12 +71,33 @@ def manage_points(driver_id):
         flash("Invalid request.", "danger")
         return redirect(url_for('sponsor_bp.manage_points_page'))
 
+    log_message = ""
+    notification_message = ""
+
     if action == "award":
         association.points += points
-        flash(f"Awarded {points} points to {association.driver.USERNAME}.", "success")
+        log_message = f"Awarded {points} points to driver {username} (ID: {driver_id}). Reason: {reason}. Sponsor ID: {current_user.USER_CODE}."
+        notification_message = f"🎉 **{current_user.FNAME} {current_user.LNAME}** awarded you {points} points! New balance: {association.points}."
+        flash(f"Awarded {points} points to {username}.", "success")
     elif action == "remove":
         association.points -= points
-        flash(f"Removed {points} points from {association.driver.USERNAME}.", "info")
+        log_message = f"Removed {points} points from driver {username} (ID: {driver_id}). Reason: {reason}. Sponsor ID: {current_user.USER_CODE}."
+        notification_message = f"⚠️ **{current_user.FNAME} {current_user.LNAME}** removed {points} points. New balance: {association.points}."
+        flash(f"Removed {points} points from {username}.", "info")
+
+    from models import AuditLog # If not already imported
+    log_entry = AuditLog(
+        EVENT_TYPE="DRIVER_POINTS", # Use DRIVER_POINTS from common.logging
+        DETAILS=log_message
+    )
+    db.session.add(log_entry)
+
+    if driver_user and driver_user.wants_point_notifications:
+        Notification.create_notification(
+            recipient_code=driver_id,
+            sender_code=current_user.USER_CODE,
+            message=notification_message
+        )
 
     db.session.commit()
     return redirect(url_for('sponsor_bp.manage_points_page'))
@@ -104,6 +131,8 @@ def add_user():
         new_pass = new_user.admin_set_new_pass()
         db.session.add(new_user)
 
+        db.session.flush()
+
        # Now, create the corresponding Driver profile record at the same time
         new_driver_profile = Driver(
             DRIVER_ID=new_user_code,
@@ -116,7 +145,7 @@ def add_user():
             driver_id=new_user_code,
             sponsor_id=current_user.USER_CODE
         )
-        
+
         db.session.add(association)
 
         db.session.commit()
@@ -133,7 +162,7 @@ def review_driver_applications():
     apps = DriverApplication.query.filter_by(SPONSOR_ID=current_user.USER_CODE, STATUS="Pending").all()
     return render_template("sponsor/review_driver_applications.html", applications=apps)
 
-@sponsor_bp.route("/applications/<int:app_id>/<decision>")
+@sponsor_bp.route("/applications/<int:app_id>/<decision>", methods=['GET', 'POST'])
 @login_required
 @role_required(Role.SPONSOR)
 def driver_decision(app_id, decision):

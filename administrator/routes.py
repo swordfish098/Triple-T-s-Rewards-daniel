@@ -167,7 +167,12 @@ def add_user():
         #split the name into first and last
         name_parts = name.split(' ', 1)
         first_name = name_parts[0]
-        last_name = name_parts[1]
+        
+        if len(name_parts) > 1:
+            last_name = name_parts[1]
+        else:
+            # Assign a non-empty placeholder since LNAME in the User model is nullable=False
+            last_name = "[N/A]"
         
         # Check if the user already exists
         existing_user = User.query.filter_by(USERNAME=username).first()
@@ -195,7 +200,7 @@ def add_user():
             CREATED_AT=datetime.now(),
             IS_ACTIVE=1
         )
-        new_pass = new_user.set_password()
+        new_pass = new_user.admin_set_new_pass()
 
         flash_message = (
         f"🚨 **TEMPORARY PASSWORD FOR TESTING:** `{new_pass}`. "
