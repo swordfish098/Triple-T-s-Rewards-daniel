@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Purchase History for {{ driver.USERNAME }}</h2>
+    <h1>{{ current_user.USERNAME }}'s Order History</h1>
     <hr>
     {% if purchases %}
         <table class="table table-striped">
@@ -19,7 +19,8 @@
             <tbody>
                 {% for purchase in purchases %}
                     <tr>
-                        <td>{{ purchase.purchase_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ purchase.purchase_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>{{ purchase.user.USERNAME }}</td>  {# <-- Accesses the purchasing driver's username #}
                         <td>{{ purchase.title }}</td>
                         <td>{{ purchase.quantity }}</td>
                         <td>{{ purchase.points }}</td>
