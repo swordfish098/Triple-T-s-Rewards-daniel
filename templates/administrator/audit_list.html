@@ -3,13 +3,28 @@
 
   <div style="display:flex; align-items:center; justify-content:space-between;">
     <h1>{{ title }}</h1>
+    {# Keep the Download CSV link, but update it to include date filters if they exist #}
     <a class="btn"
-       href="{{ url_for('administrator_bp.export_audit_csv', event_type=event_type) }}">
+       href="{{ url_for('administrator_bp.export_audit_csv', event_type=event_type, start=request.args.get('start', ''), end=request.args.get('end', '')) }}">
       ⬇︎ Download CSV
     </a>
   </div>
+
+  {# Include the filter partial from the main branch #}
+  {# Pass the necessary context (start, end, select_type, allowed_event_types) #}
+  {% set context = {
+       'start': request.args.get('start', ''),
+       'end': request.args.get('end', ''),
+       'select_type': event_type,
+       'allowed_event_types': allowed_event_types,
+       'action_url': url_for('administrator_bp.view_audit_logs')
+     }
+  %}
+  {% include "partials/filter.html" with context %}
+
+  {# Use 'events' as the variable name consistently #}
   {% if events|length == 0 %}
-    <p class="muted">No events yet.</p>
+    <p class="muted">No events found matching the criteria.</p> {# More informative message #}
   {% else %}
     <table>
       <thead>
@@ -24,16 +39,25 @@
           <tr>
             <td>{{ e.CREATED_AT.strftime('%Y-%m-%d %H:%M:%S') if e.CREATED_AT else '' }}</td>
 
-            {# For Login Activity, show SUCCESS / FAIL / LOGOUT badge based on DETAILS #}
-            {% if title == "Login Activity" %}
-              {% set status = (e.DETAILS or "").split(" ", 1)[0] %}
-              {% set cls = status.lower() %}
+            {# Keep the special formatting for Login Activity #}
+            {% if title == "Login Activity" and e.DETAILS %}
+              {% set status = e.DETAILS.split(" ", 1)[0] %} {# Safer split #}
+              {# Define classes based on status - adjust as needed for your CSS #}
+              {% set cls = 'default' %}
+              {% if status == 'SUCCESS' %}
+                {% set cls = 'success' %}
+              {% elif status in ['FAIL', 'FAILURE'] %}
+                {% set cls = 'danger' %}
+              {% elif status == 'LOGOUT' %}
+                 {% set cls = 'info' %}
+              {% endif %}
               <td><span class="badge {{ cls }}">{{ status }}</span></td>
             {% else %}
               <td>{{ e.EVENT_TYPE }}</td>
             {% endif %}
 
-            <td><code padding:.1rem .3rem; border-radius:.25rem">{{ e.DETAILS or "" }}</code></td>
+            {# Ensure inline style is correct or moved to CSS #}
+            <td><code style="padding:.1rem .3rem; border-radius:.25rem; background: var(--code-bg); color: var(--code-text);">{{ e.DETAILS or "" }}</code></td>
           </tr>
         {% endfor %}
       </tbody>
@@ -41,6 +65,6 @@
   {% endif %}
 
   <p style="margin-top:1rem;">
-    <a class="btn" href="{{ url_for('administrator_bp.audit_menu') }}">← Back to Audit Logs</a>
+    <a class="btn" href="{{ url_for('administrator_bp.audit_menu') }}">← Back to Audit Logs Menu</a>
   </p>
 {% endblock %}

@@ -1,36 +1,81 @@
 {% extends "base.html" %}
 
+{# Use title from HEAD #}
 {% block title %}Send New Message - TRIPLE T's{% endblock %}
 
 {% block content %}
+{# Use structure from HEAD, adapting for multi-select and send_all #}
 <section class="message-page container">
   <h1>Send a New Message</h1>
+  <p class="muted">Send messages to individual users or all active drivers.</p>
 
-  <form method="POST" action="{{ url_for('notification_bp.send_message') }}" class="apply-form">
-    {{ form.hidden_tag() }}
+  {# Use action from HEAD, ensure form uses POST #}
+  <form method="POST" action="{{ url_for('notification_bp.send_message') }}" class="styled-form" id="send-message-form">
+    {{ form.hidden_tag() }} {# Includes CSRF token #}
 
-    <div class="form-group">
-      {{ form.recipient.label }}
-      {{ form.recipient(class="input-field") }}
-      {% for error in form.recipient.errors %}
-        <span class="text-danger">{{ error }}</span>
+    {# Send All Checkbox (from merged form object) #}
+    <div class="form-group form-check">
+      {{ form.send_all(class="form-check-input", id="send_all_checkbox") }}
+      {{ form.send_all.label(class="form-check-label") }}
+      {% for error in form.send_all.errors %}
+        <span class="text-danger error-message">{{ error }}</span>
       {% endfor %}
     </div>
 
+    {# Recipients Multi-Select Field (from merged form object) #}
+    {# Wrap in a div that can be toggled by JS #}
+    <div class="form-group" id="recipients-group">
+      {{ form.recipients.label(class="form-label") }}
+      {# Use a larger size for multi-select for better usability #}
+      {{ form.recipients(class="form-control select-multiple", size=8) }}
+       <small class="form-text text-muted">Hold Ctrl (or Cmd on Mac) to select multiple users.</small>
+      {% for error in form.recipients.errors %}
+        <span class="text-danger error-message">{{ error }}</span>
+      {% endfor %}
+    </div>
+
+    {# Message Text Area (from HEAD, using merged form object) #}
     <div class="form-group">
-      {{ form.message.label }}
-      {{ form.message(class="input-field") }}
+      {{ form.message.label(class="form-label") }}
+      {{ form.message(class="form-control") }} {# Use form-control for standard bootstrap/similar styling #}
       {% for error in form.message.errors %}
-        <span class="text-danger">{{ error }}</span>
+        <span class="text-danger error-message">{{ error }}</span>
       {% endfor %}
     </div>
 
+    {# Form Actions (from HEAD) #}
     <div class="form-actions">
       {{ form.submit(class="btn btn-primary") }}
       <a href="{{ url_for('notification_bp.notifications') }}" class="btn btn-outline">Cancel</a>
     </div>
   </form>
 </section>
-{% endblock %}
 
-{% block styles %}{% endblock %}
+{# Add JavaScript for toggling recipient list based on 'Send All' checkbox #}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const sendAllCheckbox = document.getElementById('send_all_checkbox');
+    const recipientsGroup = document.getElementById('recipients-group');
+    const recipientsSelect = recipientsGroup ? recipientsGroup.querySelector('select') : null;
+
+    function toggleRecipients() {
+      if (sendAllCheckbox && recipientsGroup && recipientsSelect) {
+        const disableRecipients = sendAllCheckbox.checked;
+        recipientsGroup.style.opacity = disableRecipients ? '0.5' : '1';
+        recipientsSelect.disabled = disableRecipients;
+        if (disableRecipients) {
+           // Optionally clear selection when disabling
+           // Array.from(recipientsSelect.options).forEach(option => option.selected = false);
+        }
+      }
+    }
+
+    if (sendAllCheckbox) {
+      sendAllCheckbox.addEventListener('change', toggleRecipients);
+      // Initial state on page load
+      toggleRecipients();
+    }
+  });
+</script>
+
+{% endblock %}

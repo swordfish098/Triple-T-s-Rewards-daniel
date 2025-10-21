@@ -1,4 +1,4 @@
-# triple-ts-rewards/triple-t-s-rewards/Triple-T-s-Rewards-72ca7a46f1915a7f669f3692e9b77d23b248eaee/sponsor/routes.py
+# triple-ts-rewards/.../sponsor/routes.py
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from common.decorators import role_required
@@ -13,35 +13,60 @@ import string
 # Blueprint for sponsor-related routes
 sponsor_bp = Blueprint('sponsor_bp', __name__, template_folder="../templates")
 
+# --- Helper Functions ---
+
 def next_user_code():
+    """Generates the next available USER_CODE."""
     last_user = User.query.order_by(User.USER_CODE.desc()).first()
     return (last_user.USER_CODE + 1) if last_user else 1
 
-# Dashboard
+# Keep generate_temp_password
+def generate_temp_password(length: int = 10) -> str:
+    """Generates a random temporary password."""
+    alphabet = string.ascii_letters + string.digits
+    return "".join(secrets.choice(alphabet) for _ in range(length))
+
+# --- Routes ---
+
+# Dashboard (Keep as is)
 @sponsor_bp.route('/dashboard')
 @role_required(Role.SPONSOR, allow_admin=True)
 def dashboard():
     return render_template('sponsor/dashboard.html')
 
-# Update Store Settings (now sponsor-specific)
+# Update Store Settings (Keep sponsor-specific logic from 'main')
 @sponsor_bp.route('/settings', methods=['GET', 'POST'])
 @role_required(Role.SPONSOR, allow_admin=True)
 def update_settings():
+    # Fetch or create settings specific to the current sponsor
     settings = StoreSettings.query.filter_by(sponsor_id=current_user.USER_CODE).first()
     if not settings:
         settings = StoreSettings(sponsor_id=current_user.USER_CODE)
         db.session.add(settings)
 
     if request.method == 'POST':
-        settings.ebay_category_id = request.form.get('ebay_category_id')
-        settings.point_ratio = int(request.form.get('point_ratio'))
-        db.session.commit()
-        flash("Store settings updated successfully!", "success")
-        return redirect(url_for('sponsor_bp.update_settings'))
+        settings.ebay_category_id = request.form.get('ebay_category_id', '2984') # Default if empty
+        try:
+            point_ratio_val = int(request.form.get('point_ratio', 10)) # Default if empty/invalid
+            if point_ratio_val <= 0:
+                flash("Point ratio must be a positive number.", "warning")
+            else:
+                settings.point_ratio = point_ratio_val
+        except ValueError:
+             flash("Invalid point ratio provided. Please enter a number.", "danger")
+             return render_template("sponsor/settings.html", settings=settings)
+
+        try:
+            db.session.commit()
+            flash("Store settings updated successfully!", "success")
+            return redirect(url_for('sponsor_bp.update_settings'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error updating settings: {e}", "danger")
 
     return render_template("sponsor/settings.html", settings=settings)
 
-# Manage points page
+# Manage points page (Keep DriverSponsorAssociation logic from 'main')
 @sponsor_bp.route('/points', methods=['GET'])
 @role_required(Role.SPONSOR, allow_admin=True)
 def manage_points_page():
@@ -84,7 +109,11 @@ def purchase_history():
     # Assumes you have a templates/sponsor/purchase_history.html file
     return render_template('sponsor/purchase_history.html', purchases=purchases)
 
-# Manage points for a specific driver-sponsor relationship
+    return render_template('sponsor/points.html',
+                           drivers=associations, # Pass associations
+                           current_sort=sort_by)
+
+# Manage points for a specific driver-sponsor relationship (Keep 'main' logic)
 @sponsor_bp.route('/points/<int:driver_id>', methods=['POST'])
 @role_required(Role.SPONSOR, allow_admin=True)
 def manage_points(driver_id):
@@ -94,124 +123,214 @@ def manage_points(driver_id):
         return redirect(url_for('sponsor_bp.manage_points_page'))
 
     driver_user = User.query.get(driver_id)
-    username = driver_user.USERNAME if driver_user else "Unknown Driver"
+    username = driver_user.USERNAME if driver_user else f"Driver ID {driver_id}"
 
     action = request.form.get('action')
-    points = request.form.get('points', type=int)
+    try:
+        points = int(request.form.get('points', 0))
+    except ValueError:
+        flash("Invalid point amount entered.", "danger")
+        return redirect(url_for('sponsor_bp.manage_points_page'))
+
     reason = request.form.get('reason', '').strip() or "No reason provided."
 
-    if not action or action not in ("award", "remove") or points is None or points <= 0:
-        flash("Invalid request.", "danger")
+    if action not in ("award", "remove") or points <= 0:
+        flash("Invalid action or point amount (must be positive).", "danger")
         return redirect(url_for('sponsor_bp.manage_points_page'))
 
     log_message = ""
     notification_message = ""
+    new_balance = association.points # Initialize with current balance
 
     if action == "award":
         association.points += points
-        log_message = f"Awarded {points} points to driver {username} (ID: {driver_id}). Reason: {reason}. Sponsor ID: {current_user.USER_CODE}."
-        notification_message = f"🎉 **{current_user.FNAME} {current_user.LNAME}** awarded you {points} points! New balance: {association.points}."
+        new_balance = association.points
+        log_message = f"Sponsor {current_user.USERNAME} awarded {points} points to driver {username} (ID: {driver_id}). Reason: {reason}. New Balance: {new_balance}. Sponsor ID: {current_user.USER_CODE}."
+        notification_message = f"🎉 **{current_user.FNAME} {current_user.LNAME}** awarded you {points} points! Balance: {new_balance}."
         flash(f"Awarded {points} points to {username}.", "success")
     elif action == "remove":
+        if association.points < points:
+             flash(f"Cannot remove {points} points. Driver {username} only has {association.points}.", "warning")
+             return redirect(url_for('sponsor_bp.manage_points_page'))
         association.points -= points
-        log_message = f"Removed {points} points from driver {username} (ID: {driver_id}). Reason: {reason}. Sponsor ID: {current_user.USER_CODE}."
-        notification_message = f"⚠️ **{current_user.FNAME} {current_user.LNAME}** removed {points} points. New balance: {association.points}."
+        new_balance = association.points
+        log_message = f"Sponsor {current_user.USERNAME} removed {points} points from driver {username} (ID: {driver_id}). Reason: {reason}. New Balance: {new_balance}. Sponsor ID: {current_user.USER_CODE}."
+        notification_message = f"⚠️ **{current_user.FNAME} {current_user.LNAME}** removed {points} points. Reason: {reason}. Balance: {new_balance}."
         flash(f"Removed {points} points from {username}.", "info")
 
-    from models import AuditLog # If not already imported
     log_entry = AuditLog(
-        EVENT_TYPE="DRIVER_POINTS", # Use DRIVER_POINTS from common.logging
-        DETAILS=log_message
+        EVENT_TYPE=DRIVER_POINTS,
+        DETAILS=log_message,
+        CREATED_AT=datetime.utcnow()
     )
     db.session.add(log_entry)
 
     if driver_user and driver_user.wants_point_notifications:
-        Notification.create_notification(
-            recipient_code=driver_id,
-            sender_code=current_user.USER_CODE,
-            message=notification_message
-        )
+        try:
+            Notification.create_notification(
+                recipient_code=driver_id,
+                sender_code=current_user.USER_CODE,
+                message=notification_message
+            )
+        except Exception as e:
+            print(f"Error sending notification: {e}")
+            flash("Points updated, but failed to send notification.", "warning")
 
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error updating points: {e}", "danger")
+
     return redirect(url_for('sponsor_bp.manage_points_page'))
 
-# Add a New Driver (with automatic association)
+# Add a New Driver (Keep 'main' logic with automatic association)
 @sponsor_bp.route('/add_user', methods=['GET', 'POST'])
 @role_required(Role.SPONSOR, allow_admin=True)
 def add_user():
     if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        license_number = request.form.get('license_number', '000000')
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip()
+        license_number = request.form.get('license_number', '').strip() or None
+
+        if not username or not email:
+            flash("Username and Email are required.", "danger")
+            return render_template('sponsor/add_user.html')
 
         if User.query.filter((User.USERNAME == username) | (User.EMAIL == email)).first():
             flash("Username or email already exists.", "danger")
-            return redirect(url_for('sponsor_bp.add_user'))
-        
+            return render_template('sponsor/add_user.html', username=username, email=email, license_number=license_number)
+
         new_user_code = next_user_code()
-
         new_user = User(
-            USER_CODE=new_user_code, 
-            USERNAME=username,
-            EMAIL=email,
-            USER_TYPE=Role.DRIVER,
-            FNAME="New",
-            LNAME="Driver",
-            CREATED_AT=datetime.utcnow(),
-            IS_ACTIVE=1,
-            IS_LOCKED_OUT=0
+            USER_CODE=new_user_code, USERNAME=username, EMAIL=email,
+            USER_TYPE=Role.DRIVER, FNAME="New", LNAME="Driver",
+            CREATED_AT=datetime.utcnow(), IS_ACTIVE=1, IS_LOCKED_OUT=0
         )
-        new_pass = new_user.admin_set_new_pass()
+        try:
+            new_pass = new_user.admin_set_new_pass()
+        except AttributeError:
+             flash("Error: admin_set_new_pass method not found on User model.", "danger")
+             return render_template('sponsor/add_user.html', username=username, email=email, license_number=license_number)
+
         db.session.add(new_user)
-
-        db.session.flush()
-
-       # Now, create the corresponding Driver profile record at the same time
         new_driver_profile = Driver(
             DRIVER_ID=new_user_code,
-            LICENSE_NUMBER=license_number
+            LICENSE_NUMBER=license_number if license_number else 'N/A'
         )
-        db.session.add(new_driver_profile) # Add the new driver profile to the session
-        
-        # Also create the automatic association to the sponsor who created them
+        db.session.add(new_driver_profile)
         association = DriverSponsorAssociation(
-            driver_id=new_user_code,
-            sponsor_id=current_user.USER_CODE
+            driver_id=new_user_code, sponsor_id=current_user.USER_CODE, points=0
         )
-
         db.session.add(association)
 
-        db.session.commit()
-        flash(f"Driver '{username}' created and automatically associated with your organization. Temp Pass: {new_pass}", "success")
-        return redirect(url_for('sponsor_bp.dashboard'))
-        
+        try:
+            db.session.commit()
+            flash(f"Driver '{username}' created and automatically associated. Temp Pass: {new_pass}", "success")
+            return redirect(url_for('sponsor_bp.manage_points_page'))
+        except IntegrityError as e:
+             db.session.rollback()
+             flash(f"Database error: Could not create driver. {e}", "danger")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"An unexpected error occurred: {e}", "danger")
+
     return render_template('sponsor/add_user.html')
 
-# Driver application review (with association creation on approval)
+# Driver application review (Keep 'main' logic)
 @sponsor_bp.route("/applications")
 @login_required
 @role_required(Role.SPONSOR)
 def review_driver_applications():
-    apps = DriverApplication.query.filter_by(SPONSOR_ID=current_user.USER_CODE, STATUS="Pending").all()
+    apps = DriverApplication.query.filter_by(
+        SPONSOR_ID=current_user.USER_CODE, STATUS="Pending"
+    ).all()
+    for app in apps:
+        driver_user = User.query.get(app.DRIVER_ID)
+        app.driver_name = driver_user.USERNAME if driver_user else f"ID: {app.DRIVER_ID}"
     return render_template("sponsor/review_driver_applications.html", applications=apps)
 
-@sponsor_bp.route("/applications/<int:app_id>/<decision>", methods=['GET', 'POST'])
+# Process driver application decision (Keep 'main' logic)
+@sponsor_bp.route("/applications/<int:app_id>/<decision>", methods=['POST'])
 @login_required
 @role_required(Role.SPONSOR)
 def driver_decision(app_id, decision):
     app = DriverApplication.query.get_or_404(app_id)
-    if decision == "accept":
+    if app.SPONSOR_ID != current_user.USER_CODE:
+        flash("You are not authorized to process this application.", "danger")
+        return redirect(url_for("sponsor_bp.review_driver_applications"))
+
+    decision_lower = decision.lower()
+    flash_msg = ""
+    notify_msg = ""
+
+    if decision_lower == "accept":
         app.STATUS = "Accepted"
-        
         existing_assoc = DriverSponsorAssociation.query.get((app.DRIVER_ID, app.SPONSOR_ID))
         if not existing_assoc:
             association = DriverSponsorAssociation(
-                driver_id=app.DRIVER_ID,
-                sponsor_id=app.SPONSOR_ID
+                driver_id=app.DRIVER_ID, sponsor_id=app.SPONSOR_ID, points=0
             )
             db.session.add(association)
-    else:
+            flash_msg = "Driver application accepted and association created!"
+        else:
+             flash_msg = "Driver application accepted (association already exists)."
+        notify_msg = f"🎉 Your application to {current_user.FNAME} {current_user.LNAME}'s organization has been accepted!"
+
+    elif decision_lower == "reject":
         app.STATUS = "Rejected"
+        flash_msg = "Driver application rejected."
+        notify_msg = f"ℹ️ Your application to {current_user.FNAME} {current_user.LNAME}'s organization has been rejected."
+    else:
+        flash("Invalid decision.", "warning")
+        return redirect(url_for("sponsor_bp.review_driver_applications"))
+
+    try:
+        db.session.commit()
+        flash(flash_msg, "info")
+        # Send notification after successful commit
+        if notify_msg:
+             Notification.create_notification(
+                 recipient_code=app.DRIVER_ID,
+                 sender_code=current_user.USER_CODE,
+                 message=notify_msg
+             )
+             db.session.commit() # Commit notification separately
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error processing application: {e}", "danger")
+
+    return redirect(url_for("sponsor_bp.review_driver_applications"))
+
+
+# --- Routes kept from previous merge (Admin only) ---
+
+@sponsor_bp.route("/users/new", methods=["GET", "POST"])
+@role_required(Role.ADMINISTRATOR)
+def create_sponsor_user():
+    if request.method == "GET":
+        return render_template("sponsor/create_user.html")
+
+    username = (request.form.get("username") or "").strip()
+    email = (request.form.get("email") or "").strip()
+    org_name = (request.form.get("org_name") or "").strip()
+
+    if not username or not email or not org_name:
+        flash("Username, Email, and Organization Name are required.", "danger")
+        return render_template("sponsor/create_user.html")
+
+    if User.query.filter((User.USERNAME == username) | (User.EMAIL == email)).first():
+        flash("Username or email is already taken.", "danger")
+        return render_template("sponsor/create_user.html", username=username, email=email, org_name=org_name)
+
+    new_user_code = next_user_code()
+    new_user = User(
+        USER_CODE=new_user_code, USERNAME=username, USER_TYPE=Role.SPONSOR,
+        FNAME=request.form.get("fname", "Sponsor"), LNAME=request.form.get("lname", "User"),
+        EMAIL=email, CREATED_AT=datetime.utcnow(), IS_ACTIVE=1, IS_LOCKED_OUT=0, FAILED_ATTEMPTS=0,
+    )
+    temp_password = new_user.admin_set_new_pass()
+    new_sponsor_profile = Sponsor(SPONSOR_ID=new_user_code, ORG_NAME=org_name, STATUS="Approved")
 
     db.session.commit()
     flash(f"Driver application {decision}ed!", "info")

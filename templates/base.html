@@ -5,64 +5,108 @@
   <title>{% block title %}TTT Rewards{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script>
-    // Handles theme loading before page renders to prevent flash of wrong theme
+    // Theme loading script from 078d... (includes background color set)
     (function() {
       const saved = localStorage.getItem("theme");
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const theme = saved || (prefersDark ? "dark" : "light");
+      // Default to 'light' if nothing is saved and system preference isn't dark
+      const theme = saved === 'dark' || (!saved && prefersDark) ? "dark" : "light";
       document.documentElement.setAttribute("data-theme", theme);
+      // Set initial background to prevent flashing
+      document.documentElement.style.backgroundColor = theme === "dark" ? "#222629" : "#ffffff"; // Adjust colors if needed
     })();
   </script>
-  
+
+  {# Keep CSS includes #}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
-  {% block styles %}{% endblock %}
+  {% block styles %}{% endblock %} {# Allow page-specific styles #}
 </head>
 
 <body>
 
+  {# Include universal navbar #}
   {% include "partials/navbar.html" %}
 
-  {% set show_sidebar = current_user.is_authenticated %}
-
+  {# Main layout div, add class conditionally #}
   <div class="app-layout {% if show_sidebar %}with-sidebar{% endif %}">
+      {# Include sidebar conditionally #}
       {% if show_sidebar %}
           {% include 'partials/sidebar.html' %}
       {% endif %}
 
+      {# Main content area #}
+      {# Structure with container inside main seems reasonable #}
       <main class="app-main-content">
           <div class="container">
+              {# Keep flashed messages block inside container #}
               {% with messages = get_flashed_messages(with_categories=true) %}
                   {% if messages %}
+                     <div class="flash-container">
                       {% for category, message in messages %}
-                          <div class="flash-messages {{ category }}">{{ message }}</div>
+                          <div class="flash-message alert alert-{{ category }}">{{ message }}</div>
                       {% endfor %}
+                     </div>
                   {% endif %}
               {% endwith %}
-              
+
+              {# Main content block for child templates #}
               {% block content %}{% endblock %}
           </div>
       </main>
   </div>
 
+  {# Include universal footer #}
   {% include "partials/footer.html" %}
 
-  
+
+  {# --- SCRIPTS --- #}
   {% block scripts %}
-    <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    {# Base scripts needed on most pages #}
+    <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script> {# For sidebar toggling #}
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>   {# For theme toggle functionality #}
+    <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>  {# For navbar dropdown #}
+
+    {# Removed truck-rewards.js include, should be in index.html only #}
+
+    {# Keep inline script for setting theme class (complements theme.js) from 078d... #}
+    <script>
+      // This immediately sets the class based on initial theme detection
+      (function () {
+        try {
+          // Use the same logic as the head script for consistency
+          const saved = localStorage.getItem("theme");
+          const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          const theme = saved === 'dark' || (!saved && prefersDark) ? "dark" : "light";
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {
+          console.error('Error applying theme class:', e);
+        }
+      })();
+    </script>
+
+    {# Keep notification and cart count fetching logic #}
     <script>
       function fetchNotificationCount() {
+        // Check authentication status via Jinja variable
         if ("{{ current_user.is_authenticated }}" === "True") {
           fetch('{{ url_for("notification_bp.get_unread_count") }}')
-            .then(response => response.ok ? response.json() : {})
+            .then(response => response.ok ? response.json() : Promise.reject('Network response was not ok.'))
             .then(data => {
-              const countElement = document.getElementById('notification-count');
-              if (data && data.count > 0) {
-                countElement.textContent = data.count;
-                countElement.style.display = 'inline-block'; 
-              } else {
-                countElement.style.display = 'none'; 
+              // Use the ID from the merged navbar
+              const countElement = document.getElementById('notification-count-badge');
+              if (countElement) { // Check if element exists
+                  if (data && data.count > 0) {
+                    countElement.textContent = data.count;
+                    countElement.style.display = 'inline-block'; // Or appropriate style
+                  } else {
+                    countElement.textContent = '0'; // Show 0 instead of hiding
+                    countElement.style.display = 'none'; // Or keep visible with 0
+                  }
               }
             })
             .catch(error => console.error('Error fetching notifications:', error));
@@ -72,26 +116,36 @@
       function fetchCartCount() {
         if ("{{ current_user.is_authenticated }}" === "True") {
           fetch('{{ url_for("rewards_bp.cart_count") }}')
-            .then(response => response.json())
+            .then(response => response.ok ? response.json() : Promise.reject('Network response was not ok.'))
             .then(data => {
-              const countElement = document.getElementById('cart-item-count');
-              if (data && data.count > 0) {
-                countElement.textContent = `(${data.count})`;
-              } else {
-                countElement.textContent = '';
-              }
+              // Use the ID from the merged navbar
+              const countElement = document.getElementById('cart-count');
+               if (countElement) { // Check if element exists
+                  if (data && data.count > 0) {
+                    // Display count, adjust format as needed (e.g., just number, or with parens)
+                    countElement.textContent = data.count;
+                    countElement.style.display = 'inline-block'; // Or appropriate style
+                  } else {
+                    countElement.textContent = '0'; // Show 0
+                     countElement.style.display = 'none'; // Or keep visible with 0
+                  }
+               }
             })
             .catch(error => console.error('Error fetching cart count:', error));
         }
       }
 
       // Initial fetch and start polling
-      if (document.getElementById('notification-count')) fetchNotificationCount();
-      if (document.getElementById('cart-item-count')) fetchCartCount();
-      setInterval(fetchNotificationCount, 30000);
-      setInterval(fetchCartCount, 30000);
+      // Use safer checks from HEAD before initial call
+      document.addEventListener('DOMContentLoaded', () => {
+          if (document.getElementById('notification-count-badge')) fetchNotificationCount();
+          if (document.getElementById('cart-count')) fetchCartCount();
+          // Set intervals for polling
+          setInterval(fetchNotificationCount, 30000); // Poll every 30 seconds
+          setInterval(fetchCartCount, 30000); // Poll every 30 seconds
+      });
     </script>
-    <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
-  {% endblock %}
+
+  {% endblock %} {# End scripts block #}
 </body>
 </html>
