@@ -10,6 +10,7 @@ from models import User
 from flask_wtf.csrf import CSRFProtect
 from forms import AboutForm
 from extensions import bcrypt, migrate, login_manager, csrf, bcrypt, db
+from auth.routes import auth_bp
 
 # Initialize scheduler
 scheduler = APScheduler()
@@ -23,6 +24,9 @@ def create_app():
     # Initialize Flask app
     app = Flask(__name__)
     app.config.from_object(Config)
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-change-me")
+    app.config["WTF_CSRF_TIME_LIMIT"] = None  # optional
+
     
     db.init_app(app)
     migrate.init_app(app, db)
@@ -38,7 +42,6 @@ def create_app():
 
     # Register blueprints
     from driver.routes import driver_bp
-    from auth.routes import auth_bp
     from administrator.routes import administrator_bp
     from sponsor.routes import sponsor_bp
     from truck_rewards.routes import rewards_bp
@@ -49,7 +52,7 @@ def create_app():
     
 
     app.register_blueprint(about_bp, url_prefix='/about')
-    app.register_blueprint(auth_bp)
+    app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(driver_bp, url_prefix='/driver')
     app.register_blueprint(administrator_bp, url_prefix='/administrator')
     app.register_blueprint(sponsor_bp, url_prefix='/sponsor')
