@@ -34,16 +34,14 @@
         <p class="muted">You are not yet associated with any sponsors. Apply to one to get started!</p>
     {% endif %}
 
-    {# Resolve conflict: Use the 'main' block structure and add missing link #}
-    <div class="dashboard-actions" style="margin-top: 2rem; display: flex; flex-wrap: wrap; gap: 1rem;">
-        <a href="{{ url_for('driver_bp.point_history') }}" class="btn btn-secondary">View Point History</a>
-        {# Added Purchase History link #}
-        <a href="{{ url_for('driver_bp.purchase_history') }}" class="btn btn-secondary">View Purchase History</a>
-        <a href="{{ url_for('driver_bp.addresses') }}" class="btn btn-secondary">Manage Addresses</a>
-        <a href="{{ url_for('driver_bp.settings') }}" class="btn btn-secondary">My Settings</a>
-        <a href="{{ url_for('driver_bp.update_contact') }}" class="btn btn-secondary">Edit Account Info</a>
-        <a href="{{ url_for('driver_bp.apply_driver') }}" class="btn btn-info">Apply to Sponsor</a>
-        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline">Logout</a>
+    <div style="margin-top: 2rem;" class="dashboard-links">
+        <p><a href="{{ url_for('driver_bp.apply_driver') }}" class="btn btn-dash">Apply to a New Sponsor</a></p>
+        <p><a href="{{ url_for('driver_bp.point_history') }}" class="btn btn-dash">View Point History</a></p>
+        <p><a href="{{ url_for('driver_bp.purchase_history') }}" class="btn btn-dash">View Purchase History</a></p>
+        <p><a href="{{ url_for('driver_bp.addresses') }}" class="btn btn-dash">Manage Shipping Addresses</a></p>
+        <p><a href="{{ url_for('driver_bp.settings') }}" class="btn btn-dash">My Settings</a></p>
+        <p><a href="{{ url_for('driver_bp.update_contact') }}" class="btn btn-dash">Edit Account Information</a></p>
+        <p><a href="{{ url_for('auth.logout') }}" class="btn btn-outline">Logout</a></p>
     </div>
 
 </main> {# End app-main-content #}

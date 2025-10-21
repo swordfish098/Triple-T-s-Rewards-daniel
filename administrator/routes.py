@@ -529,11 +529,8 @@ def reset_user_password(user_id):
 @administrator_bp.route("/sponsors/pending") # More specific route
 @role_required(Role.ADMINISTRATOR)
 def review_sponsors():
-    """Lists pending sponsor applications for admin review."""
-    # Join with User to get names easily
-    pending_sponsors = db.session.query(Sponsor, User).join(User, Sponsor.SPONSOR_ID == User.USER_CODE).filter(Sponsor.STATUS == "Pending").all()
-    # Ensure the correct template name is used
-    return render_template("administrator/review_sponsors.html", sponsors=pending_sponsors)
+    sponsors = Sponsor.query.filter_by(STATUS="Pending").all()
+    return render_template("administrator/review_sponsor.html", sponsors=sponsors)
 
 
 @administrator_bp.route("/sponsors/<int:sponsor_id>/<decision>", methods=['POST']) # Should be POST
