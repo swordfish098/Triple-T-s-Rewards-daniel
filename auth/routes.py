@@ -168,6 +168,9 @@ def logout():
     log_audit_event("LOGOUT", f"user={uname} role={urole} ip={ip}") # Use a distinct event type
 
     logout_user()
+
+    session.clear()
+    
     flash("You have been logged out.", "info")
     return redirect(url_for("auth.login"))
 

@@ -28,18 +28,6 @@
   {# Include universal navbar #}
   {% include "partials/navbar.html" %}
 
-  {# Define pages that should NOT have a sidebar (from 078d...) #}
-  {% set no_sidebar_endpoints = [
-      'common.index',  {# Or maybe keep sidebar on index? Adjust as needed #}
-      'auth.login',
-      # Add other auth routes like register, reset_password, reset_token if they exist
-      'auth.reset_password',
-      'auth.reset_token',
-      'about_bp.view_about' # Assuming this is a full-page view
-  ] %}
-  {# Show sidebar only if user is authenticated AND not on a 'no_sidebar' page #}
-  {% set show_sidebar = current_user.is_authenticated and request.endpoint not in no_sidebar_endpoints %}
-
   {# Main layout div, add class conditionally #}
   <div class="app-layout {% if show_sidebar %}with-sidebar{% endif %}">
       {# Include sidebar conditionally #}

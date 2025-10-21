@@ -12,6 +12,7 @@ from common.logging import (LOGIN_EVENT, SALES_BY_SPONSOR, SALES_BY_DRIVER,
 from datetime import datetime, timedelta
 import csv
 from io import StringIO
+from impersonation.routes import allowed_to_impersonate
 
 # Blueprint definition
 administrator_bp = Blueprint('administrator_bp', __name__, template_folder="../templates")
@@ -317,7 +318,11 @@ def accounts():
             )
         )
     users = query.order_by(User.USER_CODE.asc()).all()
-    return render_template('administrator/accounts.html', accounts=users, search_term=search_term)
+    # Pass the function to the template context VVVVVV
+    return render_template('administrator/accounts.html',
+                           accounts=users,
+                           search_term=search_term,
+                           allowed_to_impersonate=allowed_to_impersonate) # Add this line
 
 @administrator_bp.route('/disabled_accounts', methods=['GET'])
 @role_required(Role.ADMINISTRATOR)

@@ -24,6 +24,7 @@
       </a>
 
       {# Keep Cart Link #}
+      {% if current_user.USER_TYPE == 'driver' %}
       <a href="{{ url_for('rewards_bp.view_cart') }}" class="nav-link" aria-label="View Cart">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-shopping-cart">
           {# SVG paths for cart icon #}
@@ -36,6 +37,7 @@
         <span class="badge cart-count" id="cart-count">0</span>
         <span class="visually-hidden">Cart</span>
       </a>
+      {% endif %}
 
       {# Keep Wishlist Link #}
       <a href="{{ url_for('rewards_bp.view_wishlist') }}" class="nav-link {{ 'active' if request.endpoint == 'rewards_bp.view_wishlist' else '' }}">
@@ -63,12 +65,13 @@
           {# Add Settings Link from 078d... #}
           {# Point to the correct settings endpoint based on user role if needed #}
           {% if current_user.USER_TYPE == 'driver' %}
-             <a href="{{ url_for('driver_bp.settings') }}">Settings</a>
+            <a href="{{ url_for('driver_bp.settings') }}">Settings</a>
           {% elif current_user.USER_TYPE == 'sponsor' %}
-             <a href="{{ url_for('sponsor_bp.settings') }}">Store Settings</a> {# Or a general settings page #}
+            {# VVVVV Change this line VVVVV #}
+            <a href="{{ url_for('sponsor_bp.update_settings') }}">Store Settings</a> {# Or a general settings page #}
           {% else %}
-             {# Link to a general auth settings or admin settings #}
-             <a href="{{ url_for('auth.settings') }}">Account Settings</a>
+            {# Link to a general auth settings or admin settings #}
+            <a href="{{ url_for('auth.settings') }}">Account Settings</a>
           {% endif %}
           {# Logout Link #}
           <a href="{{ url_for('auth.logout') }}">Logout</a>
