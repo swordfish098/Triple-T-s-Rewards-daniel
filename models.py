@@ -223,3 +223,11 @@ class WishlistItem(db.Model):
     price = db.Column(db.Float, nullable=False)
     points = db.Column(db.Integer, nullable=False)
     image_url = db.Column(db.String(255), nullable=True)
+
+class ImpersonationLog(db.Model):
+    __tablename__ = 'IMPERSONATION_LOG'
+    id = db.Column(db.Integer, primary_key=True)
+    actor_id = db.Column(db.Integer, db.ForeignKey('USERS.USER_CODE'), nullable=False)
+    target_id = db.Column(db.Integer, db.ForeignKey('USERS.USER_CODE'), nullable=False)
+    action = db.Column(db.String(20), nullable=False)  # 'start' or 'stop'
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)

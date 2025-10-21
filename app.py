@@ -1,6 +1,6 @@
 from datetime import datetime
 import os
-from flask import Flask, redirect, render_template, request, url_for, flash
+from flask import Flask, redirect, render_template, request, url_for, flash, session, g
 from dotenv import load_dotenv
 from flask_apscheduler import APScheduler
 from flask_login import current_user, logout_user
@@ -49,7 +49,7 @@ def create_app():
     from about.routes import about_bp
     from about.routes import update_version
     from notifications.routes import notification_bp
-    
+    from impersonation.routes import impersonation_bp
 
     app.register_blueprint(about_bp, url_prefix='/about')
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -59,6 +59,7 @@ def create_app():
     app.register_blueprint(rewards_bp, url_prefix='/truck-rewards')
     app.register_blueprint(common_bp)
     app.register_blueprint(notification_bp, url_prefix='/notifications')
+    app.register_blueprint(impersonation_bp, url_prefix='/impersonation')
 
 
     # Schedule the version update job to run weekly
@@ -94,6 +95,15 @@ def enforce_admin_lockouts():
         logout_user()
         return redirect(url_for("auth.login"))
 
+@app.before_request
+def load_impersonation_state():
+    """Expose impersonation info to all templates."""
+    g.is_impersonating = bool(session.get('impersonating'))
+    g.impersonator = None
+
+    if g.is_impersonating and session.get('original_user_code'):
+        impersonator_code = session.get('original_user_code')
+        g.impersonator = User.query.filter_by(USER_CODE=impersonator_code).first()
 
 if __name__ == '__main__':
     app.run(debug=True)
