@@ -1,38 +1,51 @@
+# notifications/forms.py
 from flask_wtf import FlaskForm
-from wtforms import TextAreaField, SubmitField, SelectField
+# Combined imports
+from wtforms import BooleanField, SelectMultipleField, TextAreaField, SubmitField
 from wtforms.validators import DataRequired, Length
-from models import User
+from models import User, Role # Added Role import
+from extensions import db # Added db import
 
-# Assuming your User model has USERNAME, FNAME, and LNAME attributes
+# Form for sending notifications
 class SendNotificationForm(FlaskForm):
-    recipient = SelectField('Recipient', 
-                            validators=[DataRequired()], 
-                            coerce=int)
-    
-    message = TextAreaField('Message Content', 
+    # Use SelectMultipleField for potentially multiple recipients
+    recipients = SelectMultipleField("Recipients", coerce=int)
+
+    # Keep the message field with added Length validation from HEAD
+    message = TextAreaField('Message Content',
                             validators=[
-                                DataRequired(), 
+                                DataRequired(),
                                 Length(min=5, max=500, message='Message must be between 5 and 500 characters.')
-                            ], 
-                            render_kw={"rows": 5})
-    
+                            ],
+                            render_kw={"rows": 5}) # Keep render_kw for better UI
+
+    # Keep SubmitField
     submit = SubmitField('Send Message')
-    
+    # Keep send_all field
+    send_all = BooleanField('Send to All Drivers')
+
     def __init__(self, current_user_code=None, *args, **kwargs):
         super(SendNotificationForm, self).__init__(*args, **kwargs)
-        
-        # 1. Fetch all active users, ordered by Username
-        users = User.query.filter_by(IS_ACTIVE=True).order_by(User.USERNAME).all()
-        
-        choices = []
-        for u in users:
-            # 2. Create the display label: "USERNAME (First Name Last Name)"
-            display_name = f"{u.USERNAME} ({u.FNAME} {u.LNAME})"
-            
-            # 3. Skip the current user if their USER_CODE is provided
-            if current_user_code is None or u.USER_CODE != current_user_code:
-                # The value (u.USER_CODE) must be the integer ID you save in the database
-                choices.append((u.USER_CODE, display_name))
-        
-        # 4. Set the final choices list
-        self.recipient.choices = choices
+
+        # Use the more detailed query from the 078d... version
+        rows = (User.query
+                .with_entities(
+                    User.USER_CODE,   # index 0
+                    User.USERNAME,    # index 1
+                    User.FNAME,       # index 2
+                    User.LNAME        # index 3
+                )
+                .filter(User.IS_ACTIVE == 1) # Filter for active users
+                .order_by(User.USERNAME.asc())
+                .all())
+
+        # Exclude the current user sending the message
+        if current_user_code is not None:
+            # Ensure comparison is done with the correct type (int)
+            rows = [r for r in rows if r[0] != int(current_user_code)]
+
+        # Set the choices for the recipients field (plural) using the format from 078d...
+        self.recipients.choices = [
+            (user_code, f"{username} ({(fname or '').strip()} {(lname or '').strip()})".strip())
+            for (user_code, username, fname, lname) in rows
+        ]
