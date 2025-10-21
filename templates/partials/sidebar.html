@@ -1,57 +1,192 @@
-<aside class="sidebar">
+{# Use the structure from 078d... #}
+<aside class="app-sidebar">
+    <ul class="sidebar-list">
 
-  <nav class="sidebar-nav">
-    {% if current_user.is_authenticated %}
-      <a href="{{ url_for('common.index') }}" class="sidebar-link {{ 'active' if request.endpoint == 'common.index' else '' }}">
-        Home
-      </a>
-    {% endif %}
+        {# --- UNIVERSAL LINKS --- #}
+        {# Home Link (adapted from HEAD) #}
+        {% if current_user.is_authenticated %}
+        <li>
+            <a href="{{ url_for('common.index') }}" class="sidebar-link {{ 'active' if request.endpoint == 'common.index' else '' }}">
+                <span class="icon">🏠</span> {# Example Icon #}
+                Home
+            </a>
+        </li>
+        {% endif %}
 
-    {% if current_user.USER_TYPE == 'administrator' %}
-      {% set admin_endpoints = ['administrator.dashboard', 'administrator.view_accounts', 'administrator.add_user', 'administrator.edit_user', 'administrator.review_sponsor_applications', 'administrator.audit_menu', 'administrator.audit_list', 'administrator.locked_users', 'administrator.disabled_accounts', 'administrator.timeout_users'] %}
-      <div class="sidebar-section-header">Admin</div>
-      <a href="{{ url_for('administrator_bp.dashboard') }}" class="sidebar-link {{ 'active' if request.endpoint == 'administrator_bp.dashboard' else '' }}">
-        Admin Dashboard
-      </a>
-      <a href="{{ url_for('administrator_bp.audit_menu') }}" class="sidebar-link {{ 'active' if request.endpoint == 'administrator.audit_menu' else '' }}">
-        Audit Log
-      </a>
-    {% endif %}
+        {# Truck Rewards Store Link (from 078d...) - Show only if logged in and potentially only for drivers? #}
+        {% if current_user.is_authenticated and current_user.USER_TYPE == 'driver' %}
+         <li>
+            {# Corrected endpoint check #}
+            <a href="{{ url_for('rewards_bp.store') }}" class="sidebar-link {{ 'active' if request.endpoint == 'rewards_bp.store' else '' }}">
+                <span class="icon">🛒</span> {# Example Icon #}
+                Points Store
+            </a>
+         </li>
+        {% endif %}
 
-    {% if current_user.USER_TYPE == 'driver' %}
-      {% set driver_endpoints = ['driver_bp.dashboard', 'driver_bp.point_history', 'driver_bp.settings', 'driver_bp.update_contact', 'driver_bp.change_password', 'driver_bp.apply_driver', 'rewards_bp.store', 'rewards_bp.view_cart'] %}
-      <div class="sidebar-section-header">Driver</div>
-      <a href="{{ url_for('driver_bp.dashboard') }}" class="sidebar-link {{ 'active' if request.endpoint in driver_endpoints else '' }}">
-        Dashboard
-      </a>
-       <a href="{{ url_for('rewards_bp.store') }}" class="sidebar-link">
-        Points Store
-      </a>
-    {% endif %}
+        {# About Page Link (from 078d...) - Assumes about_bp exists #}
+        {# Showing for everyone, adjust if needed #}
+         <li>
+            <a href="{{ url_for('about_bp.view_about') }}" class="sidebar-link {{ 'active' if request.endpoint == 'about_bp.view_about' else '' }}">
+                <span class="icon">ℹ️</span> {# Example Icon #}
+                About
+            </a>
+         </li>
 
-    {% if current_user.USER_TYPE == 'sponsor' %}
-      {% set sponsor_dashboard_endpoints = ['sponsor_bp.dashboard', 'sponsor_bp.update_settings'] %}
-      {% set sponsor_driver_endpoints = ['sponsor_bp.manage_points_page', 'sponsor_bp.add_user', 'sponsor_bp.review_driver_applications'] %}
 
-      <div class="sidebar-section-header">Sponsor</div>
-      <a href="{{ url_for('sponsor_bp.dashboard') }}" class="sidebar-link {{ 'active' if request.endpoint in sponsor_dashboard_endpoints else '' }}">
-        Dashboard
-      </a>
-      <a href="{{ url_for('sponsor_bp.manage_points_page') }}" class="sidebar-link {{ 'active' if request.endpoint in sponsor_driver_endpoints else '' }}">
-        Driver Management
-      </a>
-    {% endif %}
-  </nav>
+        {# --- DASHBOARDS EXPANDABLE SECTION (from 078d...) --- #}
+        {% if current_user.is_authenticated %} {# Only show dashboards section if logged in #}
+            {% set dashboard_endpoints = [
+                'administrator_bp.dashboard',
+                'sponsor_bp.dashboard',
+                'driver_bp.dashboard'
+            ] %}
+            {% set is_dashboard_active = request.endpoint in dashboard_endpoints %}
 
-  <div class="sidebar-footer">
-    {% if current_user.is_authenticated %}
-      <a href="{{ url_for('auth.logout') }}" class="sidebar-link logout-link">
-        Logout
-      </a>
-    {% else %}
-      <a href="{{ url_for('auth.login') }}" class="sidebar-link">
-        Login
-      </a>
-    {% endif %}
-  </div>
+            <li class="has-submenu">
+                <a href="#" class="sidebar-link submenu-toggle {% if is_dashboard_active %}expanded{% endif %}" data-target="dashboard-menu">
+                     <span class="icon">📊</span> {# Example Icon #}
+                     Dashboards
+                    <span class="toggle-icon">▼</span> {# Icon indicates collapsibility #}
+                </a>
+                <ul id="dashboard-menu" class="submenu {% if not is_dashboard_active %}collapsed{% endif %}">
+                    {# Admin Dashboard Link #}
+                    {% if current_user.USER_TYPE == 'administrator' %}
+                    <li>
+                        <a href="{{ url_for('administrator_bp.dashboard') }}" class="sidebar-link sub-link {{ 'active' if request.endpoint == 'administrator_bp.dashboard' else '' }}">
+                            Admin Dashboard
+                        </a>
+                    </li>
+                    {% endif %}
+                    {# Sponsor Dashboard Link #}
+                    {% if current_user.USER_TYPE in ['administrator', 'sponsor'] %}
+                     <li>
+                        <a href="{{ url_for('sponsor_bp.dashboard') }}" class="sidebar-link sub-link {{ 'active' if request.endpoint == 'sponsor_bp.dashboard' else '' }}">
+                            Sponsor Dashboard
+                        </a>
+                     </li>
+                    {% endif %}
+                    {# Driver Dashboard Link #}
+                    {% if current_user.USER_TYPE in ['administrator', 'sponsor', 'driver'] %}
+                     <li>
+                        <a href="{{ url_for('driver_bp.dashboard') }}" class="sidebar-link sub-link {{ 'active' if request.endpoint == 'driver_bp.dashboard' else '' }}">
+                            Driver Dashboard
+                        </a>
+                     </li>
+                    {% endif %}
+                </ul>
+            </li>
+        {% endif %} {# End authenticated check for dashboards #}
+
+        {# --- REMAINDER OF ROLE-SPECIFIC LINKS --- #}
+
+        {# --- Administrator Links --- #}
+        {% if current_user.is_authenticated and current_user.USER_TYPE == 'administrator' %}
+            {# Manage Accounts (Combine links from 078d... into one section) #}
+            <li>
+                {% set account_endpoints = ['administrator_bp.accounts', 'administrator_bp.add_user', 'administrator_bp.edit_user', 'administrator_bp.disabled_accounts', 'administrator_bp.locked_users', 'administrator_bp.timeout_users', 'administrator_bp.unlock', 'administrator_bp.clear_timeout'] %}
+                <a href="{{ url_for('administrator_bp.accounts') }}" class="sidebar-link {{ 'active' if request.endpoint in account_endpoints else '' }}">
+                     <span class="icon">👥</span> {# Example Icon #}
+                     Manage Accounts
+                </a>
+            </li>
+             {# Sponsor Review (from merged admin routes) #}
+            <li>
+                 {% set sponsor_review_endpoints = ['administrator_bp.review_sponsors', 'administrator_bp.sponsor_decision'] %}
+                 <a href="{{ url_for('administrator_bp.review_sponsors') }}" class="sidebar-link {{ 'active' if request.endpoint in sponsor_review_endpoints else '' }}">
+                     <span class="icon">⭐</span> {# Example Icon #}
+                     Review Sponsors
+                 </a>
+            </li>
+            {# Audit Log Link (Consistent between versions) #}
+            <li>
+                {# Use broader check for active state #}
+                <a href="{{ url_for('administrator_bp.audit_menu') }}" class="sidebar-link {{ 'active' if 'audit' in request.endpoint else '' }}">
+                     <span class="icon">📜</span> {# Example Icon #}
+                     Audit Log
+                </a>
+            </li>
+        {% endif %}
+
+        {# --- Sponsor Links --- #}
+        {% if current_user.is_authenticated and current_user.USER_TYPE == 'sponsor' %}
+             {# Driver Management (Combine links from HEAD/078d...) #}
+             <li>
+                {% set sponsor_driver_endpoints = ['sponsor_bp.manage_points_page', 'sponsor_bp.add_user', 'sponsor_bp.view_associated_drivers', 'sponsor_bp.driver_point_history'] %}
+                <a href="{{ url_for('sponsor_bp.manage_points_page') }}" class="sidebar-link {{ 'active' if request.endpoint in sponsor_driver_endpoints else '' }}">
+                    <span class="icon">🚚</span> {# Example Icon #}
+                    Manage Drivers
+                </a>
+             </li>
+             {# Review Applications Link (Consistent) #}
+             <li>
+                <a href="{{ url_for('sponsor_bp.review_driver_applications') }}" class="sidebar-link {{ 'active' if request.endpoint == 'sponsor_bp.review_driver_applications' else '' }}">
+                    <span class="icon">📝</span> {# Example Icon #}
+                    Review Applications
+                </a>
+             </li>
+              {# Purchase History (from merged sponsor routes) #}
+             <li>
+                 <a href="{{ url_for('sponsor_bp.purchase_history') }}" class="sidebar-link {{ 'active' if request.endpoint == 'sponsor_bp.purchase_history' else '' }}">
+                    <span class="icon">🧾</span> {# Example Icon #}
+                    Purchase History
+                 </a>
+            </li>
+             {# Store Settings (from merged sponsor routes) #}
+             <li>
+                  <a href="{{ url_for('sponsor_bp.update_settings') }}" class="sidebar-link {{ 'active' if request.endpoint == 'sponsor_bp.update_settings' else '' }}">
+                    <span class="icon">⚙️</span> {# Example Icon #}
+                    Store Settings
+                  </a>
+            </li>
+        {% endif %}
+
+        {# --- Driver Links --- #}
+        {% if current_user.is_authenticated and current_user.USER_TYPE == 'driver' %}
+            {# Point History Link (Consistent) #}
+            <li>
+                <a href="{{ url_for('driver_bp.point_history') }}" class="sidebar-link {{ 'active' if request.endpoint == 'driver_bp.point_history' else '' }}">
+                    <span class="icon">💯</span> {# Example Icon #}
+                    Point History
+                </a>
+            </li>
+            {# Purchase History (from merged driver routes) #}
+             <li>
+                <a href="{{ url_for('driver_bp.purchase_history') }}" class="sidebar-link {{ 'active' if request.endpoint == 'driver_bp.purchase_history' else '' }}">
+                    <span class="icon">🛍️</span> {# Example Icon #}
+                    Purchase History
+                </a>
+             </li>
+            {# Apply to Sponsor (from merged driver routes) #}
+             <li>
+                <a href="{{ url_for('driver_bp.apply_driver') }}" class="sidebar-link {{ 'active' if request.endpoint == 'driver_bp.apply_driver' else '' }}">
+                    <span class="icon">✍️</span> {# Example Icon #}
+                    Apply to Sponsor
+                </a>
+             </li>
+             {# Account Settings (Combine links from 078d...) #}
+            <li>
+                {% set driver_settings_endpoints = ['driver_bp.settings', 'driver_bp.update_contact', 'driver_bp.change_password', 'driver_bp.addresses', 'driver_bp.add_address', 'driver_bp.edit_address'] %}
+                <a href="{{ url_for('driver_bp.settings') }}" class="sidebar-link {{ 'active' if request.endpoint in driver_settings_endpoints else '' }}">
+                    <span class="icon">🔧</span> {# Example Icon #}
+                    Account Settings
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+
+    {# Footer section for Login/Logout - adapted from HEAD #}
+    <div class="sidebar-footer">
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('auth.logout') }}" class="sidebar-link logout-link">
+                 <span class="icon">🚪</span> {# Example Icon #}
+                 Logout
+            </a>
+        {% else %}
+            <a href="{{ url_for('auth.login') }}" class="sidebar-link">
+                 <span class="icon">🔑</span> {# Example Icon #}
+                 Login
+            </a>
+        {% endif %}
+    </div>
 </aside>

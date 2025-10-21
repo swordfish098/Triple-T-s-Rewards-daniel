@@ -3,21 +3,32 @@
 <main class="app-main-content container">
   <h1>Manage Driver Points</h1>
 
+  {# Keep flashed messages block #}
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-      {% for category, message in messages %}
-        <div class="flash-messages {{ category }}">{{ message }}</div>
-      {% endfor %}
+      <div class="flash-container">
+          {% for category, message in messages %}
+            <div class="flash-message alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+      </div>
     {% endif %}
   {% endwith %}
 
+  {# Use 'drivers' variable which now holds association objects #}
   {% if drivers %}
+    {# Summary Section (Using 'points' attribute from association) #}
     <section class="summary-section">
+      {# Calculate total points directly from the association objects passed #}
       {% set total_points = drivers | sum(attribute='points') %}
-      {% set avg_points = (total_points / (drivers|length)) | round(2) %}
+      {% set driver_count = drivers | length %}
+      {% set avg_points = (total_points / driver_count) | round(2) if driver_count > 0 else 0 %}
       <div class="summary-card">
+         <div class="summary-item">
+            <h3>Drivers Associated</h3>
+            <p class="summary-value">{{ driver_count }}</p>
+         </div>
         <div class="summary-item">
-          <h3>Total Points Across All Drivers</h3>
+          <h3>Total Points Awarded (Your Org)</h3>
           <p class="summary-value">{{ total_points }}</p>
         </div>
         <div class="summary-item">
@@ -27,8 +38,18 @@
       </div>
     </section>
 
+    {# Sorting Links (Added based on merged sponsor/routes.py) #}
+    <div class="sorting-links" style="margin-bottom: 1rem;">
+        Sort by:
+        <a href="{{ url_for('sponsor_bp.manage_points_page', sort_by='points_desc') }}" class="sort-link {{ 'active' if current_sort == 'points_desc' }}">Points (High-Low)</a> |
+        <a href="{{ url_for('sponsor_bp.manage_points_page', sort_by='points_asc') }}" class="sort-link {{ 'active' if current_sort == 'points_asc' }}">Points (Low-High)</a>
+        {# Add other sorts like name if implemented in routes #}
+    </div>
+
+
+    {# Driver Table (Iterating over association objects) #}
     <section class="data-section">
-      <table class="data-table">
+      <table class="data-table points-table"> {# Added specific class #}
         <thead>
           <tr>
             <th>Driver</th>
@@ -38,57 +59,70 @@
           </tr>
         </thead>
         <tbody>
-          {% for driver in drivers %}
+          {# Iterate through association objects #}
+          {% for assoc in drivers %}
           <tr>
-            <td>{{ driver.user.USERNAME }}</td>
+            {# Access username via assoc.user object attached in routes.py #}
+            <td>{{ assoc.user.USERNAME if assoc.user else 'Unknown Driver' }}</td>
             <td>
-              <span class="current-points">{{ driver.points }}</span>
+              {# Display current points from association #}
+              <span class="current-points">{{ assoc.points }}</span>
+              {# Keep points preview span from HEAD #}
               <span class="points-preview" style="color: #007bff; font-style: italic; margin-left: 8px;"></span>
             </td>
 
+            {# Award form (Use assoc.driver_id) #}
             <td>
               <form
                 method="POST"
-                action="{{ url_for('sponsor_bp.manage_points', driver_id=driver.driver_id) }}"
-                class="points-form"
+                action="{{ url_for('sponsor_bp.manage_points', driver_id=assoc.driver_id) }}"
+                class="points-form award-form" {# Added specific class #}
               >
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                {{ csrf_token() }} {# Use WTForms helper #}
                 <input type="hidden" name="action" value="award">
                 <input
                   type="number"
                   name="points"
                   min="1"
-                  class="input-field compact"
+                  class="input-field compact points-input" {# Added specific class #}
                   placeholder="Points"
                   required
                 >
-                <button type="submit" class="btn btn-primary">Award</button>
+                 <input
+                  type="text"
+                  name="reason"
+                  class="input-field compact reason-input" {# Added specific class #}
+                  placeholder="Reason (optional)"
+                >
+                <button type="submit" class="btn btn-success btn-small">Award</button> {# Use success style #}
               </form>
             </td>
 
+            {# Remove form (Use assoc.driver_id) #}
             <td>
               <form
                 method="POST"
-                action="{{ url_for('sponsor_bp.manage_points', driver_id=driver.driver_id) }}"
-                class="points-form"
+                action="{{ url_for('sponsor_bp.manage_points', driver_id=assoc.driver_id) }}"
+                class="points-form remove-form" {# Added specific class #}
               >
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                {{ csrf_token() }} {# Use WTForms helper #}
                 <input type="hidden" name="action" value="remove">
                 <input
                   type="number"
                   name="points"
                   min="1"
-                  class="input-field compact"
+                   {# Add max attribute for safety? max="{{ assoc.points }}" #}
+                  class="input-field compact points-input" {# Added specific class #}
                   placeholder="Points"
                   required
                 >
                 <input
                   type="text"
                   name="reason"
-                  class="input-field compact"
+                  class="input-field compact reason-input" {# Added specific class #}
                   placeholder="Reason (optional)"
                 >
-                <button type="submit" class="btn btn-outline">Remove</button>
+                <button type="submit" class="btn btn-danger btn-small">Remove</button> {# Use danger style #}
               </form>
             </td>
           </tr>
@@ -97,12 +131,14 @@
       </table>
     </section>
   {% else %}
-    <p class="text-muted">No drivers found.</p>
+    <p class="text-muted">No drivers are currently associated with your organization.</p> {# Updated message #}
   {% endif %}
 
-  <div class="spacer"></div>
+  {# Keep spacer and back button #}
+  <div class="spacer" style="height: 2rem;"></div>
   <a href="{{ url_for('sponsor_bp.dashboard') }}" class="btn btn-outline">← Back to Dashboard</a>
 </main>
 
+{# Keep script include from HEAD #}
 <script src="{{ url_for('static', filename='js/points_preview.js') }}"></script>
 {% endblock %}

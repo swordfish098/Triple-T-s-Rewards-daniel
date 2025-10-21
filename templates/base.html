@@ -5,12 +5,20 @@
   <title>{% block title %}TTT Rewards{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script>
+<<<<<<< HEAD
     // Handles theme loading before page renders to prevent flash of wrong theme
+=======
+    // 1️⃣ Read saved theme, or follow system preference
+>>>>>>> 078d719ae4ffb83de7064b22b82d20d18a69d451
     (function() {
       const saved = localStorage.getItem("theme");
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       const theme = saved || (prefersDark ? "dark" : "light");
       document.documentElement.setAttribute("data-theme", theme);
+<<<<<<< HEAD
+=======
+      document.documentElement.style.backgroundColor = theme === "dark" ? "#222629" : "#ffffff";
+>>>>>>> 078d719ae4ffb83de7064b22b82d20d18a69d451
     })();
   </script>
   
@@ -21,10 +29,33 @@
 
 <body>
 
+<<<<<<< HEAD
   {% include "partials/navbar.html" %}
 
   {% set show_sidebar = current_user.is_authenticated %}
 
+=======
+    {# include universal navbar #}
+  {% include "partials/navbar.html" %}
+
+  {# Define pages that should NOT have a sidebar #}
+  {% set no_sidebar_endpoints = [
+      'common.index', 
+      'auth.login', 
+      'auth.register', 
+      'common.reset_password', 
+      'common.reset_with_token',
+      'about_bp.view_about'
+  ] %}
+  {% set show_sidebar = current_user.is_authenticated %}
+
+
+
+  {# 
+     This is the main container. If you have the required CSS (body: flex-direction: column; 
+     and .app-layout: flex-grow: 1;), this structure works. 
+  #}
+>>>>>>> 078d719ae4ffb83de7064b22b82d20d18a69d451
   <div class="app-layout {% if show_sidebar %}with-sidebar{% endif %}">
       {% if show_sidebar %}
           {% include 'partials/sidebar.html' %}
@@ -51,6 +82,25 @@
   {% block scripts %}
     <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+<<<<<<< HEAD
+=======
+    <script src="{{ url_for('static', filename='js/truck-rewards.js') }}"></script>
+    <script>
+      (function () {
+        try {
+          const savedTheme = localStorage.getItem('theme') || 'light';
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (savedTheme === 'dark' || (savedTheme === 'system' && prefersDark)) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {
+          console.error('Error loading theme:', e);
+        }
+      })();
+    </script>
+>>>>>>> 078d719ae4ffb83de7064b22b82d20d18a69d451
     <script>
       function fetchNotificationCount() {
         if ("{{ current_user.is_authenticated }}" === "True") {
@@ -62,6 +112,10 @@
                 countElement.textContent = data.count;
                 countElement.style.display = 'inline-block'; 
               } else {
+<<<<<<< HEAD
+=======
+                countElement.textContent = '';
+>>>>>>> 078d719ae4ffb83de7064b22b82d20d18a69d451
                 countElement.style.display = 'none'; 
               }
             })
@@ -86,8 +140,13 @@
       }
 
       // Initial fetch and start polling
+<<<<<<< HEAD
       if (document.getElementById('notification-count')) fetchNotificationCount();
       if (document.getElementById('cart-item-count')) fetchCartCount();
+=======
+      fetchNotificationCount();
+      fetchCartCount();
+>>>>>>> 078d719ae4ffb83de7064b22b82d20d18a69d451
       setInterval(fetchNotificationCount, 30000);
       setInterval(fetchCartCount, 30000);
     </script>

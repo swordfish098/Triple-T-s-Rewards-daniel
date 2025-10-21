@@ -1,15 +1,15 @@
 <nav class="site-nav">
   <div class="nav-left">
-
+    {# Keep logo link #}
     <a class="nav-link {{ 'active' if request.endpoint == 'common.index' else '' }}"
        href="{{ url_for('common.index') }}">
       <img src="{{ url_for('static', filename='ttt_logo.png') }}" alt="Triple T's Rewards" class="nav-logo">
     </a>
-
   </div>
 
   <div class="nav-right">
     {% if current_user.is_authenticated %}
+      {# Keep Notifications Link #}
       <a class="nav-link {{ 'active' if request.endpoint == 'notification_bp.notifications' else '' }}"
          href="{{ url_for('notification_bp.notifications') }}" aria-label="View Messages">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-message">
@@ -18,27 +18,32 @@
           <path d="M8 13h6" />
           <path d="M12 20l-4 -4h-4a2 2 0 0 1 -2 -2v-8a2 2 0 0 1 2 -2h16a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-4l-4 4z" />
         </svg>
-        <span class="visually-hidden">Send Message</span>
+        {# Add notification count span (might need JS to populate) #}
+        <span class="badge notification-count" id="notification-count-badge">0</span>
+        <span class="visually-hidden">Messages</span>
       </a>
+
+      {# Keep Cart Link #}
       <a href="{{ url_for('rewards_bp.view_cart') }}" class="nav-link" aria-label="View Cart">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-shopping-cart">
+          {# SVG paths for cart icon #}
           <circle cx="9" cy="19" r="1" />
           <circle cx="17" cy="19" r="1" />
           <path d="M5 6h16l-1.5 9h-13z" />
           <path d="M5 6l-1 -3" />
         </svg>
-        <span id="cart-item-count"></span>
+        {# Use the ID from truck-rewards.js #}
+        <span class="badge cart-count" id="cart-count">0</span>
         <span class="visually-hidden">Cart</span>
       </a>
-      <a href="{{ url_for('rewards_bp.view_wishlist') }}" class="nav-link">
+
+      {# Keep Wishlist Link #}
+      <a href="{{ url_for('rewards_bp.view_wishlist') }}" class="nav-link {{ 'active' if request.endpoint == 'rewards_bp.view_wishlist' else '' }}">
+        {# Consider using an icon #}
         Wishlist
       </a>
-      <span id="notification-bell-container">
-        <a href="{{ url_for('notification_bp.notifications') }}">
-          🔔
-        </a>
-        <span id="notification-count"></span>
-      </span>
+
+      {# Keep User Menu #}
       <span class="user-menu-container">
         <button class="user-menu-toggle" aria-haspopup="true" aria-expanded="false">
           <span class="user-name">Hi, {{ current_user.USERNAME }}</span>
@@ -47,6 +52,7 @@
           </svg>
         </button>
         <div class="user-menu">
+          {# Theme Toggle #}
           <div class="dropdown-theme-toggle">
             <span class="theme-label">Dark Mode</span>
             <label class="theme-switch">
@@ -54,11 +60,38 @@
               <span class="slider"></span>
             </label>
           </div>
+          {# Add Settings Link from 078d... #}
+          {# Point to the correct settings endpoint based on user role if needed #}
+          {% if current_user.USER_TYPE == 'driver' %}
+             <a href="{{ url_for('driver_bp.settings') }}">Settings</a>
+          {% elif current_user.USER_TYPE == 'sponsor' %}
+             <a href="{{ url_for('sponsor_bp.settings') }}">Store Settings</a> {# Or a general settings page #}
+          {% else %}
+             {# Link to a general auth settings or admin settings #}
+             <a href="{{ url_for('auth.settings') }}">Account Settings</a>
+          {% endif %}
+          {# Logout Link #}
           <a href="{{ url_for('auth.logout') }}">Logout</a>
         </div>
       </span>
-    {% else %}
-      <a class="btn-primary" href="{{ url_for('auth.login') }}">Login</a>
+
+      {# Add Impersonation Banner from 078d... #}
+      {# Check session variable directly, or rely on g if set up in before_request #}
+      {% if session.get('impersonating') %}
+        <div class="impersonation-banner" role="status" aria-live="polite">
+          <form method="POST" action="{{ url_for('impersonation_bp.stop_impersonation') }}" style="display:inline;">
+            {{ csrf_token() }} {# Use WTForms CSRF token function #}
+            <button type="submit" class="btn btn-danger small" title="Stop impersonation">
+              {# Try fetching original user info from session if needed, otherwise generic text #}
+              Stop Impersonating
+            </button>
+          </form>
+          <span class="impersonation-target">Viewing as {{ current_user.USERNAME }}</span>
+        </div>
+      {% endif %}
+
+    {% else %} {# User not authenticated #}
+      <a class="btn btn-primary" href="{{ url_for('auth.login') }}">Login</a>
     {% endif %}
   </div>
 </nav>

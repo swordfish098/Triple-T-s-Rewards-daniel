@@ -4,7 +4,6 @@
 
 {% block styles %}
   {{ super() }} {# Ensure theme.css + style.css are included #}
-  {# No page-level CSS: we rely on the app styles only #}
 {% endblock %}
 
 {% block content %}
@@ -16,13 +15,13 @@
           <div class="flash-messages">
             {% for category, message in messages %}
               {% if category == 'success' %}
-                <div class="alert success" role="alert">{{ message }}</div>
+                <div class="alert success" role="alert">{{ message | safe }}</div> {# Use safe filter for flashed HTML #}
               {% elif category == 'danger' %}
-                <div class="alert error" role="alert">{{ message }}</div>
+                <div class="alert error" role="alert">{{ message | safe }}</div>
               {% elif category == 'warning' %}
-                <div class="alert warning" role="alert">{{ message }}</div>
+                <div class="alert warning" role="alert">{{ message | safe }}</div>
               {% else %}
-                <div class="alert" role="status">{{ message }}</div>
+                <div class="alert" role="status">{{ message | safe }}</div>
               {% endif %}
             {% endfor %}
           </div>
@@ -34,12 +33,17 @@
           ← Back
         </a>
         <h1 style="margin:0;">Active Users</h1>
+        {# Optional: Add search form here if desired based on backend route #}
+        {# <form method="GET" action="{{ url_for('administrator_bp.accounts') }}"> #}
+        {#   <input type="search" name="search" placeholder="Search users..." value="{{ search_term or '' }}"> #}
+        {#   <button type="submit">Search</button> #}
+        {# </form> #}
       </div>
 
       {% if accounts %}
         <table aria-describedby="active-users-caption">
           <caption id="active-users-caption" class="text-muted" style="text-align:left; padding:.5rem 0;">
-            List of currently active users
+            List of currently active users. {% if search_term %}Filtered by: "{{ search_term }}"{% endif %}
           </caption>
           <thead>
             <tr>
@@ -48,7 +52,7 @@
               <th scope="col">Email</th>
               <th scope="col">Type</th>
               <th scope="col">Joined</th>
-              <th scope="col" style="width: 120px;">Actions</th>
+              <th scope="col" style="min-width: 220px;">Actions</th> {# Increased width for more buttons #}
             </tr>
           </thead>
           <tbody>
@@ -58,21 +62,34 @@
               <td>{{ user.FNAME }} {{ user.LNAME }}</td>
               <td>{{ user.EMAIL }}</td>
               <td>
-                <span class="badge">{{ user.USER_TYPE }}</span>
+                <span class="badge">{{ user.USER_TYPE | capitalize }}</span> {# Capitalize type #}
               </td>
-              <td>{{ user.CREATED_AT.strftime('%Y-%m-%d %H:%M') }}</td>
+              <td>{{ user.CREATED_AT.strftime('%Y-%m-%d') }}</td> {# Simpler date format #}
               <td>
-                <div style="display:flex; gap:.5rem; align-items:center;">
+                <div style="display:flex; flex-wrap: wrap; gap:.5rem; align-items:center;"> {# Allow wrapping #}
+                  {# --- Impersonate Button (from 078d...) --- #}
+                  {# Only show if not impersonating self and allowed #}
+                  {% if user.USER_CODE != current_user.USER_CODE and allowed_to_impersonate(user) %} {# Assuming allowed_to_impersonate is available in template context #}
+                  <form method="POST" action="{{ url_for('impersonation_bp.start_impersonation', target_id=user.USER_CODE) }}" style="display:inline; margin:0;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-outline small" title="Impersonate {{ user.USERNAME }}">
+                      Impersonate
+                    </button>
+                  </form>
+                  {% endif %}
+
+                  {# --- Edit Button --- #}
                   <a
                     href="{{ url_for('administrator_bp.edit_user', user_id=user.USER_CODE) }}"
-                    class="btn btn-outline"
+                    class="btn btn-outline small" {# Made small for consistency #}
                     title="Edit user {{ user.USERNAME }}"
                     aria-label="Edit user {{ user.USERNAME }}"
                   >
                     Edit
                   </a>
 
-                  {% if user.USER_CODE != current_user.USER_CODE %}
+                  {# --- Disable Button --- #}
+                  {% if user.USER_CODE != current_user.USER_CODE %} {# Can't disable self #}
                   <form
                     method="POST"
                     action="{{ url_for('administrator_bp.disable_user', user_id=user.USER_CODE) }}"
@@ -82,8 +99,8 @@
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button
                       type="submit"
-                      class="btn"
-                      style="background: var(--error); color:#fff; border-color: transparent;"
+                      class="btn small" {# Made small #}
+                      style="background: var(--warning); color:#fff; border-color: transparent;" {# Changed to warning color #}
                       title="Disable user {{ user.USERNAME }}"
                       aria-label="Disable user {{ user.USERNAME }}"
                     >
@@ -99,7 +116,7 @@
         </table>
       {% else %}
         <div class="box" role="status">
-          <p class="text-muted" style="margin:0;">No active users found.</p>
+          <p class="text-muted" style="margin:0;">No active users found{% if search_term %} matching "{{ search_term }}"{% endif %}.</p>
         </div>
       {% endif %}
     </div>
