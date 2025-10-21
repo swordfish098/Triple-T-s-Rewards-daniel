@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_user, logout_user, login_required, current_user
 from common.decorators import role_required
 from common.logging import DRIVER_POINTS
-from models import Role, AuditLog, User, db, Sponsor, DriverApplication, Address, StoreSettings, Driver, DriverSponsorAssociation, CartItem
+from models import Role, AuditLog, User, db, Sponsor, DriverApplication, Address, StoreSettings, Driver, DriverSponsorAssociation, CartItem, Purchase
 from extensions import bcrypt
 
 # Blueprint for driver-related routes
@@ -261,3 +261,18 @@ def set_default_address(address_id):
     db.session.commit()
     flash('Default address has been updated!', 'success')
     return redirect(url_for('driver_bp.addresses'))
+
+# View Purchase History
+@driver_bp.route('/purchase_history')
+@role_required(Role.DRIVER)
+def purchase_history():
+    """Displays the driver's purchase history across all sponsors."""
+    
+    # 1. Query the Purchase table, filtering by the current driver's ID
+    purchases = Purchase.query.filter_by(
+        user_id=current_user.USER_CODE
+    ).order_by(Purchase.purchase_date.desc()).all()
+
+    # 2. Render the template with the list of purchases
+    # Assumes templates/driver/purchase_history.html exists
+    return render_template('driver/purchase_history.html', purchases=purchases)

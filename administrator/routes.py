@@ -392,7 +392,7 @@ def reset_user_password(user_id):
 @login_required
 def review_sponsors():
     sponsors = Sponsor.query.filter_by(STATUS="Pending").all()
-    return render_template("review_sponsors.html", sponsors=sponsors)
+    return render_template("administrator/review_sponsor.html", sponsors=sponsors)
 
 @administrator_bp.route("/sponsors/<int:sponsor_id>/<decision>")
 @login_required
