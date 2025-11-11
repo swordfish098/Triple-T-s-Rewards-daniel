@@ -16,30 +16,12 @@
       {% endif %}
     {% endwith %}
 
-    {# Keep the link structure and links from the 'main' block #}
-    <div class="dashboard-links" style="display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;">
-      {# Points management (Consistent) #}
-      <a href="{{ url_for('sponsor_bp.manage_points_page') }}" class="btn btn-primary">Manage Driver Points</a>
+      <p><a href="{{ url_for('sponsor_bp.driver_point_history') }}" class="btn btn-dash">Driver Point History</a></p>
+      
+      <p><a href="{{ url_for('sponsor_bp.purchase_history') }}" class="btn btn-dash">View Order History</a></p>
 
-      {# View Associated Drivers (Replaces 'Driver Management') #}
-      <a href="{{ url_for('sponsor_bp.view_associated_drivers') }}" class="btn btn-primary">View Associated Drivers</a>
-
-      {# Create New Driver (From HEAD/main, consistent with merged routes) #}
-      <a href="{{ url_for('sponsor_bp.add_user') }}" class="btn btn-success">Create New Driver</a> {# Changed style slightly #}
-
-      {# Review Applications (Consistent) #}
-      <a href="{{ url_for('sponsor_bp.review_driver_applications') }}" class="btn btn-primary">Review Applications</a>
-
-      {# Store Settings (Consistent) #}
-      <a href="{{ url_for('sponsor_bp.update_settings') }}" class="btn btn-primary">Store Settings</a>
-
-      {# Purchase History (From merged routes) #}
-       <a href="{{ url_for('sponsor_bp.purchase_history') }}" class="btn btn-info">View Purchase History</a>
-
-      {# Driver Point History (From merged routes) #}
-       <a href="{{ url_for('sponsor_bp.driver_point_history') }}" class="btn btn-info">View Point History Log</a>
-
-      {# Removed 'Sponsor Accounts' link as it's now admin-only #}
+      <p><a href="{{ url_for('sponsor_bp.review_driver_applications') }}" class="btn btn-dash">Review Applications</a></p>
+      <p><a href="{{ url_for('sponsor_bp.update_settings') }}" class="btn btn-dash">Store Settings</a></p>
     </div>
 
     {# Keep spacer and logout button #}

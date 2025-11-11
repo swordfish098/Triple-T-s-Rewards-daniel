@@ -38,19 +38,21 @@
       </div>
     </section>
 
-    {# Keep the sorting links structure from the 'main' block #}
-    <div class="sorting-links" style="margin-bottom: 1rem;">
-        Sort by:
-        <a href="{{ url_for('sponsor_bp.manage_points_page', sort_by='points_desc') }}" class="sort-link {{ 'active' if current_sort == 'points_desc' }}">Points (High-Low)</a> |
-        <a href="{{ url_for('sponsor_bp.manage_points_page', sort_by='points_asc') }}" class="sort-link {{ 'active' if current_sort == 'points_asc' }}">Points (Low-High)</a>
-        {# Add other sorts like name if implemented in routes #}
-        {# Add Clear Sort link if desired #}
-        | <a href="{{ url_for('sponsor_bp.manage_points_page') }}" class="sort-link">Clear Sort</a>
+    <div class="controls-section" style="margin-bottom: 15px;">
+      {% if current_sort != 'points_desc' %}
+      <a href="{{ url_for('sponsor_bp.manage_points_page', sort_by='points_desc') }}" class="btn btn-secondary">
+          Sort by Points (High to Low)
+      </a>
+      {% else %}
+      <a href="{{ url_for('sponsor_bp.manage_points_page', sort_by='points_asc') }}" class="btn btn-secondary">
+          Sort by Points (Low to High)
+      </a>
+      {% endif %}
+      <a href="{{ url_for('sponsor_bp.manage_points_page') }}" class="btn btn-outline">
+          Clear Sort
+      </a>
+  </div>
 
-    </div>
-
-
-    {# Driver Table (Iterating over association objects) #}
     <section class="data-section">
       <table class="data-table points-table"> {# Added specific class #}
         <thead>

@@ -5,9 +5,8 @@ from common.decorators import role_required
 from common.logging import log_audit_event, DRIVER_POINTS
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
-# --- Use the combined imports from the 'main' branch ---
 from models import User, Role, StoreSettings, db, DriverApplication, Sponsor, Notification, Driver, DriverSponsorAssociation, Purchase, AuditLog
-# Removed redundant db import
+from extensions import db
 import secrets
 import string
 
@@ -71,23 +70,44 @@ def update_settings():
 @sponsor_bp.route('/points', methods=['GET'])
 @role_required(Role.SPONSOR, allow_admin=True)
 def manage_points_page():
-    # Fetch associations specific to the current sponsor
-    sort_by = request.args.get('sort_by')
+    sort_by = request.args.get('sort_by') # Check for the sort parameter
+    
     query = DriverSponsorAssociation.query.filter_by(sponsor_id=current_user.USER_CODE)
-
-    # Apply sorting
+    
+    # Apply sorting based on the parameter
     if sort_by == 'points_desc':
         query = query.order_by(DriverSponsorAssociation.points.desc())
     elif sort_by == 'points_asc':
         query = query.order_by(DriverSponsorAssociation.points.asc())
     else:
+        # Default sort (e.g., by ID to be stable)
         query = query.order_by(DriverSponsorAssociation.driver_id.asc())
 
     associations = query.all()
 
-    # Attach user info
+    # Manual user attachment logic (retaining previous fix)
+    from models import User
     for assoc in associations:
-        assoc.user = User.query.get(assoc.driver_id)
+        assoc.user = User.query.get(assoc.driver_id) 
+
+    return render_template('sponsor/points.html', 
+                           drivers=associations, # Note: Template expects 'drivers' variable name
+                           current_sort=sort_by)
+
+# View Purchase History
+@sponsor_bp.route('/purchase_history')
+@role_required(Role.SPONSOR, allow_admin=True)
+def purchase_history():
+    """Retrieves all purchase records associated with the current sponsor's store."""
+    from models import Purchase # Ensure Purchase model is imported here if not at the top
+    
+    # Filter by the sponsor's ID and order by most recent purchase
+    purchases = Purchase.query.filter_by(
+        sponsor_id=current_user.USER_CODE
+    ).order_by(Purchase.purchase_date.desc()).all()
+    
+    # Assumes you have a templates/sponsor/purchase_history.html file
+    return render_template('sponsor/purchase_history.html', purchases=purchases)
 
     return render_template('sponsor/points.html',
                            drivers=associations, # Pass associations
@@ -312,69 +332,25 @@ def create_sponsor_user():
     temp_password = new_user.admin_set_new_pass()
     new_sponsor_profile = Sponsor(SPONSOR_ID=new_user_code, ORG_NAME=org_name, STATUS="Approved")
 
-    db.session.add(new_user)
-    db.session.add(new_sponsor_profile)
+    db.session.commit()
+    flash(f"Driver application {decision}ed!", "info")
+    return redirect(url_for("sponsor_bp.review_driver_applications"))
 
-    try:
-        db.session.commit()
-        log_audit_event("ADMIN_CREATE_SPONSOR", f"by={current_user.USERNAME} new_user={username} org={org_name}")
-        flash(f"Sponsor account '{username}' for {org_name} created. Temp Pass: {temp_password}", "success")
-        return redirect(url_for("sponsor_bp.list_sponsor_users"))
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error creating sponsor user: {e}")
-        flash("Error creating sponsor user.", "danger")
-        return render_template("sponsor/create_user.html", username=username, email=email, org_name=org_name)
-
-@sponsor_bp.route("/users", methods=["GET"])
-@role_required(Role.ADMINISTRATOR)
-def list_sponsor_users():
-    sponsors = User.query.filter_by(USER_TYPE=Role.SPONSOR).order_by(User.USERNAME.asc()).all()
-    for sponsor_user in sponsors:
-         sponsor_profile = Sponsor.query.get(sponsor_user.USER_CODE)
-         sponsor_user.org_name = sponsor_profile.ORG_NAME if sponsor_profile else "N/A"
-    return render_template("sponsor/list_users.html", users=sponsors)
-
-
-# View Associated Drivers (Keep 'main' logic)
-@sponsor_bp.route('/drivers', methods=['GET'])
-@role_required(Role.SPONSOR, allow_admin=True)
-def view_associated_drivers():
-    associations = DriverSponsorAssociation.query.filter_by(sponsor_id=current_user.USER_CODE).all()
-    drivers = []
-    if associations:
-        driver_ids = [assoc.driver_id for assoc in associations]
-        drivers = User.query.filter(User.USER_CODE.in_(driver_ids)).all()
-        points_map = {assoc.driver_id: assoc.points for assoc in associations}
-        for driver in drivers:
-            driver.sponsor_points = points_map.get(driver.USER_CODE, 0)
-    return render_template('sponsor/drivers.html', drivers=drivers)
-
-
-# --- Routes added from previous merge ---
-
-# View Purchase History
-@sponsor_bp.route('/purchase_history')
-@role_required(Role.SPONSOR, allow_admin=True)
-def purchase_history():
-    purchases = Purchase.query.filter_by(
-        sponsor_id=current_user.USER_CODE
-    ).order_by(Purchase.purchase_date.desc()).all()
-    for p in purchases:
-        user = User.query.get(p.user_id)
-        p.username = user.USERNAME if user else f"User ID {p.user_id}"
-    return render_template('sponsor/purchase_history.html', purchases=purchases)
-
-
-# View Driver Point History
+# View Driver Point History (Sponsor-specific view)
 @sponsor_bp.route('/driver_point_history')
 @role_required(Role.SPONSOR, allow_admin=True)
 def driver_point_history():
-    sponsor_id_str = f"Sponsor ID: {current_user.USER_CODE}"
+    """Retrieves all DRIVER_POINTS audit log entries relevant to the current sponsor."""
+    
+    # Use a LIKE query to find log entries where the details mention the sponsor's ID
+    # or alternatively, pull all DRIVER_POINTS and filter in the template, 
+    # but the LIKE query is a reasonable proxy for relevance.
     events = AuditLog.query.filter(
         AuditLog.EVENT_TYPE == DRIVER_POINTS,
-        AuditLog.DETAILS.like(f"%{sponsor_id_str}%")
+        AuditLog.DETAILS.like(f"%Sponsor ID: {current_user.USER_CODE}%")
     ).order_by(AuditLog.CREATED_AT.desc()).all()
-    return render_template('administrator/audit_list.html', # Or sponsor/audit_list.html
-                           title="Driver Point History (Your Org)",
+    
+    # Assumes you can reuse the administrator/audit_list.html template or similar
+    return render_template('administrator/audit_list.html',
+                           title="Driver Point History",
                            events=events)
