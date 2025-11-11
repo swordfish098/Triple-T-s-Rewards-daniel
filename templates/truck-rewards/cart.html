@@ -23,9 +23,9 @@
             <p class="item-title"><strong>{{ item.title }}</strong></p>
             <p class="item-points">{{ item.points }} points &times; {{ item.quantity }}</p>
           </div>
-          <form method="POST" action="{{ url_for('rewards_bp.remove_from_cart', item_id=item.id) }}">
-            {{ csrf_token() }} {# Use WTForms helper #}
-            <button type="submit" class="btn btn-outline btn-small">Remove</button>
+          <form method="POST" action="{{ url_for('rewards_bp.remove_from_cart', cart_item_id=item.id) }}">
+            {{ csrf_token() }}
+            <button type="submit" class="btn btn-outline">Remove</button>
           </form>
         </div>
       {% endfor %}
@@ -57,8 +57,8 @@
       {# Use the condition with current_points from the HEAD branch #}
       {% if current_points >= total_points and addresses %}
         <form method="POST" action="{{ url_for('rewards_bp.checkout') }}">
-          {{ csrf_token() }}
-          <button type="submit" class="btn btn-primary">Checkout with {{ total_points }} Points</button>
+          {{ csrf_token() }} {# <-- This generates the correct hidden input #}
+          <button type="submit" class="btn btn-primary">Checkout</button>
         </form>
       {% elif not addresses %}
         <p class="text-danger">Please add a shipping address before checking out.</p>
@@ -68,11 +68,11 @@
     </div>
 
     {# Clear Cart Form #}
-    <form method="POST" action="{{ url_for('rewards_bp.clear_cart') }}"
-          onsubmit="return confirm('Are you sure you want to clear your entire cart for this sponsor?');"
+    <form method="POST" action="{{ url_for('rewards_bp.clear_cart') }}" 
+          onsubmit="return confirm('Are you sure you want to clear your entire cart?');" 
           class="clear-cart-form">
-      {{ csrf_token() }}
-      <button type="submit" class="btn btn-danger btn-outline">Clear Entire Cart</button>
+      {{ csrf_token() }} {# <-- This generates the correct hidden input #}
+      <button type="submit" class="btn btn-outline" style="color: #ff4a4a; border-color: #ff4a4a;">Clear Entire Cart</button>
     </form>
 
   {% else %}

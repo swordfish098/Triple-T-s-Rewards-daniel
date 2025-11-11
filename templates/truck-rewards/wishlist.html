@@ -11,7 +11,7 @@
           <div class="title">{{ item.title }}</div>
           <div class="price">${{ "%.2f"|format(item.price) }}</div>
           <div class="points">{{ item.points }} points</div>
-          <form method="POST" action="{{ url_for('rewards_bp.remove_from_wishlist', item_id=item.id) }}" onsubmit="return confirm('Remove this item from your wishlist?');">
+          <form method="POST" action="{{ url_for('rewards_bp.remove_from_wishlist', wishlist_item_id=item.id) }}" onsubmit="return confirm('Remove this item from your wishlist?');"></form>
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit">Remove</button>
           </form>

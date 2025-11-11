@@ -11,7 +11,9 @@
 {% block content %}
   {# Added container for consistency #}
   <main class="app-main-content container">
-      <h1>My Points Store</h1> {# Changed title slightly for clarity #}
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      
+      <h1>My Points Store ({{ sponsor_name }})</h1>
 
       {# Ensure CSRF token is inside a form if needed, or remove if unused on this page #}
       {# <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"> #}

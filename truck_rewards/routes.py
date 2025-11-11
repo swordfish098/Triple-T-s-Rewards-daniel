@@ -8,7 +8,7 @@ from flask_login import login_required, current_user
 # Kept AuditLog for checkout logging
 from models import StoreSettings, CartItem, User, Notification, Address, WishlistItem, DriverSponsorAssociation, Purchase, Sponsor, AuditLog
 # Kept db, requests, os, base64
-from extensions import db
+from extensions import db, csrf
 import requests
 import os
 import base64
@@ -298,6 +298,7 @@ def remove_from_cart(cart_item_id):
 
 @rewards_bp.route("/cart/clear", methods=['POST'])
 @login_required
+@csrf.exempt
 def clear_cart():
     # Get sponsor_id from session (HEAD logic)
     sponsor_id = session.get('current_sponsor_id')
@@ -412,6 +413,7 @@ def remove_from_wishlist(wishlist_item_id):
 
 @rewards_bp.route("/checkout", methods=['POST'])
 @login_required
+@csrf.exempt
 def checkout():
     # Get sponsor_id from session (HEAD logic)
     sponsor_id = session.get('current_sponsor_id')

@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_login import login_user, logout_user, login_required, current_user
 from models import User, db, ImpersonationLog
+from extensions import csrf
 
 
 def allowed_to_impersonate(target_user):
@@ -61,6 +62,7 @@ def start_impersonation(target_id):
 
 @impersonation_bp.route('/impersonate/stop', methods=['POST'])
 @login_required
+@csrf.exempt
 def stop_impersonation():
     orig_code = session.pop('original_user_code', None)
     session.pop('impersonating', None)

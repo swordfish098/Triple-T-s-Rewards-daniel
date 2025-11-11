@@ -66,7 +66,7 @@
           {% for assoc in drivers %}
           <tr>
             {# Access username via assoc.user object attached in routes.py #}
-            <td>{{ assoc.user.USERNAME if assoc.user else 'Unknown Driver' }}</td>
+            <td>{{ assoc.user }}</td>
             <td>
               {# Display current points from association #}
               <span class="current-points">{{ assoc.points }}</span>
